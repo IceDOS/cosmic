@@ -79,6 +79,14 @@
               ".config/cosmic/com.system76.CosmicTheme.Dark.Builder/v1/corner_radii" = {
                 inherit force text;
               };
+
+              ".config/cosmic/com.system76.CosmicTheme.Light/v1/corner_radii" = {
+                inherit force text;
+              };
+
+              ".config/cosmic/com.system76.CosmicTheme.Light.Builder/v1/corner_radii" = {
+                inherit force text;
+              };
             };
           }) users;
         }
