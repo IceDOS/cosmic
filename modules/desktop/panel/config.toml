@@ -1,0 +1,26 @@
+[icedos.desktop.cosmic.panel]
+autohide = false
+expand = true
+gaps = false
+monitor = "" # Example "DP-2"
+position = "Top" # Left, Right, Top, Bottom
+themeMode = "ThemeDefault" # ThemeDefault, Dark, Light
+size = "XS" # XS, S, M, L, XL
+opacity = 100 # Percentage
+
+[icedos.desktop.cosmic.panel.plugins]
+center = ["com.system76.CosmicAppList"]
+left = [
+  "com.system76.CosmicAppletWorkspaces",
+  "com.system76.CosmicAppletTiling",
+]
+right = [
+  "com.system76.CosmicAppletInputSources",
+  "com.system76.CosmicAppletBluetooth",
+  "com.system76.CosmicAppletAudio",
+  "com.system76.CosmicAppletBattery",
+  "com.system76.CosmicAppletNetwork",
+  "com.system76.CosmicAppletNotifications",
+  "com.system76.CosmicAppletTime",
+  "com.system76.CosmicAppletPower",
+]

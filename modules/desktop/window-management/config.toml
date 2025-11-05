@@ -1,0 +1,4 @@
+[icedos.desktop.cosmic.windowManagement.focus]
+cursorFollowsFocus = true
+followsCursor = false
+followsCursorDelay = 0 # ms
