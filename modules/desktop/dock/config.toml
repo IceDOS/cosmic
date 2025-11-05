@@ -1,0 +1,15 @@
+[icedos.desktop.cosmic.dock]
+enable = false
+autohide = true
+expand = false
+gaps = false
+monitor = "" # Example "DP-2"
+position = "Bottom" # Left, Right, Top, Bottom
+themeMode = "ThemeDefault" # ThemeDefault, Dark, Light
+size = "S" # XS, S, M, L, XL
+opacity = 100 # Percentage
+
+[icedos.desktop.cosmic.dock.plugins]
+center = []
+left = []
+right = []
