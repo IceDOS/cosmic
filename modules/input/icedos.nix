@@ -21,6 +21,7 @@
 
       inherit (mouse)
         acceleration
+        mouseSpeed
         naturalScrolling
         primaryButtonRight
         scrollingSpeed
@@ -40,6 +41,7 @@
 
       mouse = {
         acceleration = mkBoolOption { default = acceleration; };
+        mouseSpeed = mkNumberOption { default = mouseSpeed; };
         naturalScrolling = mkBoolOption { default = naturalScrolling; };
         primaryButtonRight = mkBoolOption { default = primaryButtonRight; };
         scrollingSpeed = mkNumberOption { default = scrollingSpeed; };
@@ -77,6 +79,7 @@
 
               inherit (mouse)
                 acceleration
+                mouseSpeed
                 primaryButtonRight
                 naturalScrolling
                 scrollingSpeed
@@ -100,7 +103,20 @@
                         state: Enabled,
                         acceleration: Some((
                             profile: Some(${if acceleration then "Adaptive" else "Flat"}),
-                            speed: -0.10288643756187243,
+                            speed: ${
+                              if
+                                (abortIf (
+                                  mouseSpeed < 0 || mouseSpeed > 100
+                                ) "The cosmic mouse speed has to be set between 0 - 100, ${toString mouseSpeed} is out of range!")
+                              then
+                                let
+                                  slope = 0.014142271248762554;
+                                  y = -0.8099999999999998;
+                                in
+                                "${toString ((slope * mouseSpeed) + y)}"
+                              else
+                                ""
+                            },
                         )),
                         left_handed: Some(${if primaryButtonRight then "true" else "false"}),
                         scroll_config: Some((

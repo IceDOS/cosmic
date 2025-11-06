@@ -10,6 +10,7 @@ shortcuts = ""
 
 [icedos.desktop.cosmic.input.mouse]
 acceleration = false
+mouseSpeed = 50 # 0 - 100
 naturalScrolling = false
 primaryButtonRight = false
 scrollingSpeed = 50 # 1 - 100
