@@ -1,0 +1,10 @@
+[icedos.desktop.cosmic.wallpaper]
+fit = false
+seconds = 300
+wallpaper = "color:000000" # color:000000, path:/path/to/image or path:/path/to/images
+
+[[icedos.desktop.cosmic.wallpaper.monitors]]
+name = "" # Monitor connector name e.g "DP-2"
+fit = false
+seconds = 300
+wallpaper = "color:000000" # color:000000, path:/path/to/image or path:/path/to/images
