@@ -7,6 +7,7 @@ numlock = "BootOn" # BootOff, BootOn, LastBoot
 repeatDelay = 600
 repeatRate = 25
 shortcuts = ""
+superKeyAction = "WorkspaceOverview" # Launcher, WorkspaceOverview, AppLibrary, Disable
 
 [icedos.desktop.cosmic.input.mouse]
 acceleration = false

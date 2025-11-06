@@ -17,6 +17,7 @@
         repeatDelay
         repeatRate
         shortcuts
+        superKeyAction
         ;
 
       inherit (mouse)
@@ -37,6 +38,7 @@
         repeatDelay = mkNumberOption { default = repeatDelay; };
         repeatRate = mkNumberOption { default = repeatRate; };
         shortcuts = mkStrOption { default = shortcuts; };
+        superKeyAction = mkStrOption { default = superKeyAction; };
       };
 
       mouse = {
@@ -75,6 +77,7 @@
                 repeatDelay
                 repeatRate
                 shortcuts
+                superKeyAction
                 ;
 
               inherit (mouse)
@@ -86,14 +89,27 @@
                 ;
 
               inherit (icedosLib) abortIf;
-              inherit (lib) mapAttrs;
+              inherit (lib) elem mapAttrs;
               force = true;
             in
             mapAttrs (user: _: {
               home.file = {
                 ".config/cosmic/com.system76.CosmicComp/v1/keyboard_config" = {
                   inherit force;
-                  text = "(numlock_state: ${numlock})";
+                  text = "(numlock_state: ${
+                    if
+                      (abortIf (
+                        !(elem numlock [
+                          "BootOff"
+                          "BootOn"
+                          "LastBoot"
+                        ])
+                      ) ''cosmic numlock state has to one of BootOff, BootOn, LastBoot - "${numlock}" is invalid!'')
+                    then
+                      numlock
+                    else
+                      ""
+                  })";
                 };
 
                 ".config/cosmic/com.system76.CosmicComp/v1/input_default" = {
@@ -167,13 +183,81 @@
                     (
                         rules: "",
                         model: "pc104",
-                        layout: "${keyboardLayouts}",
+                        layout: "${
+                          if
+                            (abortIf (keyboardLayouts == "") "cosmic keyboard layout cannot be empty, please configure one!")
+                          then
+                            keyboardLayouts
+                          else
+                            ""
+                        }",
                         variant: ",",
                         options: Some(
                           "terminate:ctrl_alt_bksp
-                          ${if (alternateCharactersKey != "") then ",lv3:${alternateCharactersKey}_switch" else ""}
-                          ${if (capsLockKey != "") then ",caps:${capsLockKey}" else ""}
-                          ${if (composeKey != "") then ",compose:${composeKey}" else ""}
+                          ${
+                            if
+                              (abortIf
+                                (
+                                  !(elem alternateCharactersKey [
+                                    ""
+                                    "caps"
+                                    "lalt"
+                                    "lwin"
+                                    "menu"
+                                    "ralt"
+                                    "rwin"
+                                  ])
+                                )
+                                ''cosmic alternate characters key has to one of lalt, ralt, lwin, rwin, menu, caps or "" - "${alternateCharactersKey}" is invalid!''
+                              )
+                            then
+                              ",lv3:${alternateCharactersKey}_switch"
+                            else
+                              ""
+                          }
+                          ${
+                            if
+                              (abortIf
+                                (
+                                  !(elem capsLockKey [
+                                    ""
+                                    "backspace"
+                                    "ctrl_modifier"
+                                    "escape"
+                                    "super"
+                                    "swapescape"
+                                  ])
+                                )
+                                ''cosmic caps lock key has to one of escape, swapescape, backspace, super, ctrl_modifier or "" - "${capsLockKey}" is invalid!''
+                              )
+                            then
+                              ",caps:${capsLockKey}"
+                            else
+                              ""
+                          }
+                          ${
+                            if
+                              (abortIf
+                                (
+                                  !(elem composeKey [
+                                    ""
+                                    "caps"
+                                    "lwin"
+                                    "menu"
+                                    "prsc"
+                                    "ralt"
+                                    "rctrl"
+                                    "rwin"
+                                    "sclk"
+                                  ])
+                                )
+                                ''cosmic compose key has to one of ralt, lwin, rwin, menu, rctrl, caps, sclk, prsc or "" - "${composeKey}" is invalid!''
+                              )
+                            then
+                              ",compose:${composeKey}"
+                            else
+                              ""
+                          }
                         "),
                         repeat_delay: ${toString repeatDelay},
                         repeat_rate: ${toString repeatRate},
@@ -183,7 +267,34 @@
 
                 ".config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom" = {
                   inherit force;
-                  text = shortcuts;
+
+                  text = ''
+                    {
+                        (
+                            modifiers: [
+                                Super,
+                            ],
+                        ): ${
+                          if
+                            ((abortIf
+                              (
+                                !(elem superKeyAction [
+                                  "AppLibrary"
+                                  "Disable"
+                                  "Launcher"
+                                  "WorkspaceOverview"
+                                ])
+                              )
+                              ''cosmic super key action has to one of Launcher, WorkspaceOverview, AppLibrary, Disable - "${superKeyAction}" is invalid!''
+                            ) && superKeyAction == "Disable")
+                          then
+                            "Disable"
+                          else
+                            "System(${superKeyAction})"
+                        },
+                        ${shortcuts}
+                    }
+                  '';
                 };
               };
             }) users;
