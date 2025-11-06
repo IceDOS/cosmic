@@ -12,3 +12,4 @@ shortcuts = ""
 acceleration = false
 naturalScrolling = false
 primaryButtonRight = false
+scrollingSpeed = 50 # 1 - 100

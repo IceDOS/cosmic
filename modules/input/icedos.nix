@@ -19,7 +19,12 @@
         shortcuts
         ;
 
-      inherit (mouse) acceleration naturalScrolling primaryButtonRight;
+      inherit (mouse)
+        acceleration
+        naturalScrolling
+        primaryButtonRight
+        scrollingSpeed
+        ;
     in
     {
       keyboard = {
@@ -37,6 +42,7 @@
         acceleration = mkBoolOption { default = acceleration; };
         naturalScrolling = mkBoolOption { default = naturalScrolling; };
         primaryButtonRight = mkBoolOption { default = primaryButtonRight; };
+        scrollingSpeed = mkNumberOption { default = scrollingSpeed; };
       };
     };
 
@@ -46,7 +52,9 @@
       (
         {
           config,
+          icedosLib,
           lib,
+          pkgs,
           ...
         }:
 
@@ -67,8 +75,14 @@
                 shortcuts
                 ;
 
-              inherit (mouse) acceleration primaryButtonRight naturalScrolling;
+              inherit (mouse)
+                acceleration
+                primaryButtonRight
+                naturalScrolling
+                scrollingSpeed
+                ;
 
+              inherit (icedosLib) abortIf;
               inherit (lib) mapAttrs;
               force = true;
             in
@@ -93,7 +107,39 @@
                             method: None,
                             natural_scroll: Some(${if naturalScrolling then "true" else "false"}),
                             scroll_button: None,
-                            scroll_factor: Some(1.0),
+                            scroll_factor: Some(${
+                              let
+                                transformScrollingSpeed =
+                                  speed:
+                                  let
+                                    inherit (lib) readFile;
+                                    inherit (pkgs) bc runCommand;
+                                    bcBin = "${bc}/bin/bc";
+                                    speed' = toString speed;
+                                  in
+                                  if
+                                    (abortIf (
+                                      speed < 1 || speed > 100
+                                    ) "The cosmic scrolling speed has to be set between 1 - 100, ${speed'} is out of range!")
+                                  then
+                                    readFile "${runCommand "cosmic-scrolling-speed-calculator" { } ''
+                                      raw_result=$(echo "
+                                        scale=17;
+                                        exponent = (0.1 * ${speed'}) - 5;
+                                        base_ln = l(2);
+                                        y = e(exponent * base_ln);
+                                        y
+                                      " | ${bcBin} -l)
+
+                                      final_result=$(printf "%.17f" "$raw_result" | sed 's/^\(.*\)\.0*$/\1/')
+
+                                      echo "$final_result" > $out
+                                    ''}"
+                                  else
+                                    "";
+                              in
+                              "${transformScrollingSpeed scrollingSpeed}"
+                            }),
                         )),
                     )
                   '';
