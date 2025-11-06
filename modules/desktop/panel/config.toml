@@ -10,10 +10,7 @@ opacity = 100 # Percentage
 
 [icedos.desktop.cosmic.panel.plugins]
 center = ["com.system76.CosmicAppList"]
-left = [
-  "com.system76.CosmicAppletWorkspaces",
-  "com.system76.CosmicAppletTiling",
-]
+left = ["com.system76.CosmicAppletWorkspaces"]
 right = [
   "com.system76.CosmicAppletInputSources",
   "com.system76.CosmicAppletBluetooth",
