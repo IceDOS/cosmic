@@ -1,4 +1,4 @@
-[icedos.desktop.cosmic.clock]
+[icedos.desktop.cosmic.time]
 date = false
 firstDayOfTheWeek = "monday" # friday, saturday, sunday, monday
 hourFormat24 = true

@@ -1,7 +1,7 @@
 { icedosLib, lib, ... }:
 
 {
-  options.icedos.desktop.cosmic.audio =
+  options.icedos.desktop.cosmic.sound =
     let
       inherit (icedosLib) mkBoolOption;
 
@@ -10,7 +10,7 @@
           let
             inherit (lib) readFile;
           in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.audio
+          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.sound
         )
         outputAmplification
         inputAmplification
@@ -36,7 +36,7 @@
           inherit (config.icedos) desktop users;
           inherit (desktop) cosmic;
 
-          inherit (cosmic.audio)
+          inherit (cosmic.sound)
             outputAmplification
             inputAmplification
             showMediaControlsInPanel
@@ -68,5 +68,5 @@
       )
     ];
 
-  meta.name = "audio";
+  meta.name = "sound";
 }

@@ -1,12 +1,12 @@
 { icedosLib, lib, ... }:
 
 {
-  options.icedos.desktop.cosmic.clock =
+  options.icedos.desktop.cosmic.time =
     let
       inherit (icedosLib) mkBoolOption mkStrOption;
       inherit (lib) readFile;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.clock) date firstDayOfTheWeek hourFormat24 seconds;
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.time) date firstDayOfTheWeek hourFormat24 seconds;
     in
     {
       date = mkBoolOption { default = date; };
@@ -29,7 +29,7 @@
           home-manager.users =
             let
               inherit (config.icedos) desktop users;
-              inherit (desktop.cosmic.clock)
+              inherit (desktop.cosmic.time)
                 date
                 firstDayOfTheWeek
                 hourFormat24
@@ -73,5 +73,5 @@
       )
     ];
 
-  meta.name = "clock";
+  meta.name = "time";
 }
