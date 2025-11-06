@@ -1,0 +1,6 @@
+[icedos.desktop.cosmic.accessibility.magnifier]
+mouseZoomShortcuts = true
+moveZoom = "Continuously" # Continuously (follow pointer), OnEdge (pointer reaches egde), Centered (keep pointer centered)
+overlay = true
+startOnLogin = false
+zoomPercentage = 25 # >= 1
