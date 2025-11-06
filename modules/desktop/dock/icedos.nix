@@ -149,12 +149,12 @@
 
               ".config/cosmic/com.system76.CosmicPanel.Dock/v1/opacity" = {
                 inherit force;
-                text = toString (opacity / 100);
+                text = "${toString (opacity / 100)}.0";
               };
 
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/output" = mkIf (monitor != "") {
+              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/output" = {
                 inherit force;
-                text = ''Name("${monitor}")'';
+                text = if (monitor == "") then "All" else ''Name("${monitor}")'';
               };
 
               ".config/cosmic/com.system76.CosmicPanel.Dock/v1/size" = {

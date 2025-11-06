@@ -115,7 +115,7 @@
 
               ".config/cosmic/com.system76.CosmicPanel.Panel/v1/exclusive_zone" = {
                 inherit force;
-                text = if autohide then "false" else "true";
+                text = if autohide then "true" else "false";
               };
 
               ".config/cosmic/com.system76.CosmicPanel.Panel/v1/expand_to_edges" = {
@@ -147,12 +147,12 @@
 
               ".config/cosmic/com.system76.CosmicPanel.Panel/v1/opacity" = {
                 inherit force;
-                text = toString (opacity / 100);
+                text = "${toString (opacity / 100)}.0";
               };
 
-              ".config/cosmic/com.system76.CosmicPanel.Panel/v1/output" = mkIf (monitor != "") {
+              ".config/cosmic/com.system76.CosmicPanel.Panel/v1/output" = {
                 inherit force;
-                text = ''Name("${monitor}")'';
+                text = if (monitor == "") then "All" else ''Name("${monitor}")'';
               };
 
               ".config/cosmic/com.system76.CosmicPanel.Panel/v1/size" = {
