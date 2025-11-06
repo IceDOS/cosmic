@@ -1,3 +1,4 @@
 [icedos.desktop.cosmic.audio]
 outputAmplification = false
 inputAmplification = false
+showMediaControlsInPanel = false
