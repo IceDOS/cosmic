@@ -87,7 +87,7 @@
                 text = if activeHint then "true" else "false";
               };
 
-              ".config/cosmic/com.system76.CosmicComp/v1/cursor_follow_focus" = {
+              ".config/cosmic/com.system76.CosmicComp/v1/cursor_follows_focus" = {
                 inherit force;
                 text = if cursorFollowsFocus then "true" else "false";
               };
