@@ -1,7 +1,7 @@
 { icedosLib, ... }:
 
 {
-  options.icedos.desktop.cosmic.gtk-theming =
+  options.icedos.desktop.cosmic.gtkTheming =
     let
       inherit (icedosLib) mkBoolOption;
     in
