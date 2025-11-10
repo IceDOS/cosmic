@@ -1,0 +1,4 @@
+[icedos.desktop.cosmic.panel.extensions.clipboardManager]
+horizontal = false
+privateMode = false
+uniqueSession = true
