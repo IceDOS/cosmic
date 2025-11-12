@@ -24,7 +24,7 @@
 
         let
           inherit (pkgs) writeShellScriptBin;
-          inherit (lib) makeBinPath mapAttrs;
+          inherit (lib) mapAttrs;
           inherit (config.icedos) desktop users;
         in
         {
@@ -38,21 +38,18 @@
                 ".config/autostart/cosmic-startup.desktop" = {
                   text = ''
                     [Desktop Entry]
-                    Exec=${
-                      makeBinPath [
-                        (writeShellScriptBin "cosmic-startup" ''
-                          run () {
-                            pidof $1 || "$@" &
-                          }
+                    Exec=${writeShellScriptBin "cosmic-startup" ''
+                      base_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+                      nix_system_path="/run/current-system/sw/bin"
+                      nix_user_path="''${HOME}/.nix-profile/bin"
+                      export PATH="''${base_path}:''${nix_system_path}:''${nix_user_path}:$PATH"
 
-                          ${startupScript}
-                        '')
-                      ]
-                    }/cosmic-startup
+                      ${startupScript}
+                    ''}/bin/cosmic-startup
                     Icon=kitty
                     Name=StartupScript
                     StartupWMClass=startup
-                    Terminal=false
+                    Terminal=true
                     Type=Application
                   '';
                 };
@@ -63,5 +60,5 @@
       )
     ];
 
-  meta.name = "startup-script";
+  meta.name = "startup";
 }
