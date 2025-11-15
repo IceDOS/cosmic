@@ -1,8 +1,14 @@
 { ... }:
 
 {
+  inputs.cosmic-manager = {
+    url = "github:HeitorAugustoLN/cosmic-manager";
+    inputs.nixpkgs.follows = "nixpkgs";
+    inputs.home-manager.follows = "home-manager";
+  };
+
   outputs.nixosModules =
-    { ... }:
+    { inputs, ... }:
     [
       (
         { pkgs, ... }:
@@ -21,6 +27,29 @@
           ];
 
           services.desktopManager.cosmic.enable = true;
+        }
+      )
+
+      (
+        {
+          config,
+          lib,
+          ...
+        }:
+
+        let
+          inherit (lib) mapAttrs;
+          inherit (config.icedos) users;
+        in
+
+        {
+          home-manager.users = mapAttrs (user: _: {
+            imports = [
+              inputs.cosmic-manager.homeManagerModules.cosmic-manager
+            ];
+
+            wayland.desktopManager.cosmic.enable = true;
+          }) users;
         }
       )
     ];
