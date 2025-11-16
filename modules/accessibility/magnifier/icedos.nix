@@ -36,61 +36,51 @@
           home-manager.users =
             let
               inherit (config.icedos.desktop) users;
-              inherit (icedosLib) abortIf;
-              inherit (lib) elem mapAttrs;
-              force = true;
+              inherit (lib) mapAttrs;
             in
-            mapAttrs (user: _: {
-              home.file =
-                let
-                  inherit (config.icedos.desktop.cosmic.accessibility.magnifier)
-                    mouseZoomShortcuts
-                    moveZoom
-                    overlay
-                    startOnLogin
-                    zoomPercentage
-                    ;
-                in
-                {
-                  ".config/cosmic/com.system76.CosmicComp/v1/accessibility_zoom" = {
-                    inherit force;
-                    text = ''
-                      (
-                          start_on_login: ${if startOnLogin then "true" else "false"},
-                          show_overlay: ${if overlay then "true" else "false"},
-                          increment: ${
-                            if
-                              (abortIf (zoomPercentage < 1)
-                                "cosmic magnifier zoom percentage has to be bigger than 1, ${toString zoomPercentage} is out of range!"
-                              )
-                            then
-                              toString zoomPercentage
-                            else
-                              ""
-                          },
-                          view_moves: ${
-                            if
-                              (abortIf
-                                (
-                                  !(elem moveZoom [
-                                    "Continuously"
-                                    "OnEdge"
-                                    "Centered"
-                                  ])
-                                )
-                                ''cosmic move zoom view attribute has to one of Continuously, OnEdge, Centered - "${moveZoom}" is invalid!''
-                              )
-                            then
-                              moveZoom
-                            else
-                              ""
-                          },
-                          enable_mouse_zoom_shortcuts: ${if mouseZoomShortcuts then "true" else "false"},
+            mapAttrs (
+              user: _:
+              let
+                inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
+
+                inherit (config.icedos.desktop.cosmic.accessibility.magnifier)
+                  mouseZoomShortcuts
+                  moveZoom
+                  overlay
+                  startOnLogin
+                  zoomPercentage
+                  ;
+
+                inherit (icedosLib) abortIf;
+                inherit (lib) elem;
+              in
+              {
+                wayland.desktopManager.cosmic.compositor.accessibility_zoom = {
+                  enable_mouse_zoom_shortcuts = mouseZoomShortcuts;
+                  increment = zoomPercentage;
+
+                  view_moves =
+                    if
+                      (abortIf
+                        (
+                          !(elem moveZoom [
+                            "Continuously"
+                            "OnEdge"
+                            "Centered"
+                          ])
+                        )
+                        ''cosmic move zoom view attribute has to one of Continuously, OnEdge, Centered - "${moveZoom}" is invalid!''
                       )
-                    '';
-                  };
+                    then
+                      mkRON "enum" moveZoom
+                    else
+                      "";
+
+                  show_overlay = overlay;
+                  start_on_login = startOnLogin;
                 };
-            }) users;
+              }
+            ) users;
         }
       )
     ];
