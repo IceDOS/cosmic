@@ -77,44 +77,21 @@
             ;
 
           inherit (lib) mapAttrs;
-          force = true;
         in
         {
           home-manager.users = mapAttrs (user: _: {
-            home.file = {
-              ".config/cosmic/com.system76.CosmicComp/v1/active_hint" = {
-                inherit force;
-                text = if activeHint then "true" else "false";
+            wayland.desktopManager.cosmic = {
+              appearance.toolkit = {
+                show_maximize = maximize;
+                show_minimize = minimize;
               };
 
-              ".config/cosmic/com.system76.CosmicComp/v1/cursor_follows_focus" = {
-                inherit force;
-                text = if cursorFollowsFocus then "true" else "false";
-              };
-
-              ".config/cosmic/com.system76.CosmicComp/v1/edge_snap_threshold" = {
-                inherit force;
-                text = if snapWindowsToEdges then "10" else "0";
-              };
-
-              ".config/cosmic/com.system76.CosmicComp/v1/focus_follows_cursor" = {
-                inherit force;
-                text = if followsCursor then "true" else "false";
-              };
-
-              ".config/cosmic/com.system76.CosmicComp/v1/focus_follows_cursor_delay" = {
-                inherit force;
-                text = toString followsCursorDelay;
-              };
-
-              ".config/cosmic/com.system76.CosmicTk/v1/show_maximize" = {
-                inherit force;
-                text = if maximize then "true" else "false";
-              };
-
-              ".config/cosmic/com.system76.CosmicTk/v1/show_minimize" = {
-                inherit force;
-                text = if minimize then "true" else "false";
+              compositor = {
+                active_hint = activeHint;
+                cursor_follows_focus = cursorFollowsFocus;
+                edge_snap_threshold = if snapWindowsToEdges then 10 else 0;
+                focus_follows_cursor = followsCursor;
+                focus_follows_cursor_delay = followsCursorDelay;
               };
             };
           }) users;
