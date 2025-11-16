@@ -29,6 +29,7 @@
       (
         {
           config,
+          icedosLib,
           lib,
           ...
         }:
@@ -43,27 +44,41 @@
             ;
 
           inherit (lib) mapAttrs;
-          force = true;
         in
         {
-          home-manager.users = mapAttrs (user: _: {
-            home.file = {
-              ".config/cosmic/com.system76.CosmicComp/v1/workspaces" = {
-                inherit force;
-                text = ''
-                  (
-                      workspace_mode: ${if perScreen then "OutputBound" else "Global"},
-                      workspace_layout: ${orientation},
-                  )
-                '';
-              };
+          home-manager.users = mapAttrs (
+            user: _:
+            let
+              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
+              inherit (icedosLib) abortIf;
+              inherit (lib) elem;
+            in
+            {
+              wayland.desktopManager.cosmic.compositor = {
+                autotile = tile;
+                workspaces = {
+                  workspace_layout = mkRON "enum" (
+                    if
+                      (abortIf
+                        (
+                          !(elem orientation [
+                            "Horizontal"
+                            "Vertical"
+                          ])
+                        )
+                        ''cosmic workspaces orientation has to one of Horizontal, Vertical - "${orientation}" is invalid!''
+                      )
+                    then
+                      orientation
+                    else
+                      ""
+                  );
 
-              ".config/cosmic/com.system76.CosmicComp/v1/autotile" = {
-                inherit force;
-                text = if tile then "true" else "false";
+                  workspace_mode = mkRON "enum" (if perScreen then "OutputBound" else "Global");
+                };
               };
-            };
-          }) users;
+            }
+          ) users;
         }
       )
     ];
