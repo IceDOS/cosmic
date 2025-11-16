@@ -3,3 +3,4 @@ date = false
 firstDayOfTheWeek = "monday" # friday, saturday, sunday, monday
 hourFormat24 = true
 seconds = true
+weekday = false
