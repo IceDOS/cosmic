@@ -48,11 +48,6 @@
         {
           home-manager.users = mapAttrs (user: _: {
             home.file = {
-              ".config/cosmic/com.system76.CosmicAppletAudio/v1/show_media_controls_in_top_panel" = {
-                inherit force;
-                text = if showMediaControlsInPanel then "true" else "false";
-              };
-
               ".config/cosmic/com.system76.CosmicAudio/v1/amplification_source" = {
                 inherit force;
                 text = if outputAmplification then "true" else "false";
@@ -62,6 +57,10 @@
                 inherit force;
                 text = if inputAmplification then "true" else "false";
               };
+            };
+
+            wayland.desktopManager.cosmic.applets.audio.settings = {
+              show_media_controls_in_top_panel = showMediaControlsInPanel;
             };
           }) users;
         }
