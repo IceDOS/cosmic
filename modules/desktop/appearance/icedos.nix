@@ -231,6 +231,11 @@
               };
             in
             {
+              programs.cosmic-files.settings.desktop = {
+                show_content = false;
+                show_mounted_drives = false;
+                show_trash = false;
+              };
 
               wayland.desktopManager.cosmic.appearance = {
                 theme = {
