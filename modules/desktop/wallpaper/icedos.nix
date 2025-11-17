@@ -48,146 +48,137 @@
           ...
         }:
         let
-          inherit (config.icedos) desktop users;
-          inherit (desktop) cosmic;
-
-          inherit (cosmic.wallpaper)
-            fit
-            monitors
-            seconds
-            wallpaper
-            ;
-
-          inherit (icedosLib) abortIf;
-
-          inherit (lib)
-            concatMapStringsSep
-            head
-            last
-            length
-            listToAttrs
-            mapAttrs
-            mkIf
-            strings
-            ;
-
-          force = true;
-
-          generateWallpaper =
-            source:
-            let
-              inherit (strings) splitString;
-              stringParts = splitString ":" source;
-              type =
-                if
-                  (abortIf (
-                    length stringParts != 2
-                  ) "A cosmic wallpaper setup's wallpaper attribute is misconfigured!")
-                then
-                  head stringParts
-                else
-                  "";
-              value = last stringParts;
-            in
-            {
-              color = ''Color(Single((${generateColor value})))'';
-              path = ''Path("${value}")'';
-            }
-            .${type};
-
-          generateColor =
-            color:
-            let
-              inherit (lib) readFile;
-              inherit (pkgs) bc runCommand;
-              bcBin = "${bc}/bin/bc";
-            in
-            readFile "${
-              runCommand "hex-to-rgb-tuple" { } ''
-                function printTuple() {
-                  echo "scale=8; $1/255" | ${bcBin}
-                }
-
-                mkdir -p $out
-                hex="#${color}"
-
-                r=$(printf "%d" 0x''${hex:1:2})
-                g=$(printf "%d" 0x''${hex:3:2})
-                b=$(printf "%d" 0x''${hex:5:2})
-
-                echo "$(printTuple $r), $(printTuple $g), $(printTuple $b)" > $out/color
-              ''
-            }/color";
-
-          generateWallpaperMonitor = output: source: seconds: fit: ''
-            (
-                output: "${output}",
-                source: ${generateWallpaper source},
-                filter_by_theme: true,
-                rotation_frequency: ${toString seconds},
-                filter_method: Lanczos,
-                scaling_mode: ${if fit then "Fit((0.0, 0.0, 0.0))" else "Zoom"},
-                sampling_method: Alphanumeric,
-            )
-          '';
-
-          perScreen = length monitors > 0;
+          inherit (config.icedos) users;
+          inherit (lib) mapAttrs;
         in
         {
-          home-manager.users = mapAttrs (user: _: {
-            home.file = {
-              ".config/cosmic/com.system76.CosmicBackground/v1/all" = mkIf (!perScreen) {
-                inherit force;
-                text = (generateWallpaperMonitor "all" wallpaper seconds fit);
-              };
+          home-manager.users = mapAttrs (
+            user: _:
+            let
+              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
 
-              ".config/cosmic/com.system76.CosmicBackground/v1/backgrounds" = {
-                inherit force;
-                text =
-                  if (perScreen) then
-                    ''
-                      [
-                        ${concatMapStringsSep "," (monitor: ''"${monitor.name}"'') monitors}
-                      ]
-                    ''
-                  else
-                    "[]";
-              };
+              inherit (config.icedos) desktop;
+              inherit (desktop) cosmic;
 
-              ".config/cosmic/com.system76.CosmicBackground/v1/same-on-all" = {
-                inherit force;
-                text = if perScreen then "false" else "true";
-              };
+              inherit (cosmic.wallpaper)
+                fit
+                monitors
+                seconds
+                wallpaper
+                ;
 
-            }
-            // listToAttrs (
-              map (
-                monitor:
+              inherit (icedosLib) abortIf;
+
+              inherit (lib)
+                head
+                last
+                length
+                listToAttrs
+                splitString
+                strings
+                toUpper
+                ;
+
+              generateColor =
+                color:
                 let
-                  inherit (monitor)
-                    fit
-                    name
-                    seconds
-                    wallpaper
-                    ;
+                  inherit (lib) readFile;
+                  inherit (pkgs) bc runCommand;
+                  bcBin = "${bc}/bin/bc";
                 in
-                {
-                  name =
+                splitString "," (
+                  readFile "${
+                    runCommand "hex-to-rgb-tuple" { } ''
+                      function printTuple() {
+                        echo "scale=8; $1/255" | ${bcBin}
+                      }
+
+                      mkdir -p $out
+                      hex="#${color}"
+
+                      r=$(printf "%d" 0x''${hex:1:2})
+                      g=$(printf "%d" 0x''${hex:3:2})
+                      b=$(printf "%d" 0x''${hex:5:2})
+
+                      echo "$(printTuple $r), $(printTuple $g), $(printTuple $b)" > $out/color
+                    ''
+                  }/color"
+                );
+
+              generateWallpaper =
+                source:
+                let
+                  inherit (strings) splitString;
+                  stringParts = splitString ":" source;
+
+                  type =
                     if
-                      (abortIf (name == "") "A cosmic wallpaper monitor setup's name attribute is empty or missing!")
+                      (abortIf (
+                        length stringParts != 2
+                      ) "A cosmic wallpaper setup's wallpaper attribute is misconfigured!")
                     then
-                      ".config/cosmic/com.system76.CosmicBackground/v1/output.${name}"
+                      head stringParts
                     else
                       "";
 
-                  value = {
-                    inherit force;
-                    text = (generateWallpaperMonitor name wallpaper seconds fit);
-                  };
+                  value = last stringParts;
+                in
+                {
+                  color = mkRON "tuple" (generateColor value);
+                  path = value;
                 }
-              ) monitors
-            );
-          }) users;
+                .${type};
+
+              generateWallpaperConfig = monitor: {
+                filter_by_theme = false;
+                filter_method = mkRON "enum" "Linear";
+                output = monitor;
+                rotation_frequency = seconds;
+                sampling_method = mkRON "enum" "Alphanumeric";
+                scaling_mode = mkRON "enum" (if fit then "Stretch" else "Zoom");
+
+                source =
+                  let
+                    inherit (strings) splitString;
+                    stringParts = splitString ":" wallpaper;
+
+                    type =
+                      if
+                        (abortIf (
+                          length stringParts != 2
+                        ) "A cosmic wallpaper setup's wallpaper attribute is misconfigured!")
+                      then
+                        head stringParts
+                      else
+                        "";
+                  in
+                  mkRON "enum" {
+                    value = [
+                      (generateWallpaper wallpaper)
+                    ];
+
+                    variant =
+                      let
+                        firstChar = builtins.substring 0 1 type;
+                        rest = builtins.substring 1 (builtins.stringLength type - 1) type;
+                      in
+                      (toUpper firstChar) + rest;
+                  };
+              };
+
+              perScreen = length monitors > 0;
+            in
+            {
+              wayland.desktopManager.cosmic.wallpapers = [
+                (
+                  if (!perScreen) then
+                    generateWallpaperConfig "all"
+                  else
+                    listToAttrs (monitor: generateWallpaperConfig monitor) monitors
+                )
+              ];
+            }
+          ) users;
         }
       )
     ];
