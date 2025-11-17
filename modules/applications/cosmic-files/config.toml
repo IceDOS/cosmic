@@ -1,0 +1,6 @@
+[icedos.desktop.cosmic.applications.cosmicFiles]
+details = false
+foldersFirst = true
+hidden = true
+iconSize = 100
+view = "Grid" # List, Grid
