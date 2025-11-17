@@ -86,24 +86,22 @@
                   inherit (pkgs) bc runCommand;
                   bcBin = "${bc}/bin/bc";
                 in
-                splitString "," (
-                  readFile "${
-                    runCommand "hex-to-rgb-tuple" { } ''
-                      function printTuple() {
-                        echo "scale=8; $1/255" | ${bcBin}
-                      }
+                readFile "${
+                  runCommand "hex-to-rgb-tuple" { } ''
+                    function printTuple() {
+                      echo "scale=8; $1/255" | ${bcBin}
+                    }
 
-                      mkdir -p $out
-                      hex="#${color}"
+                    mkdir -p $out
+                    hex="#${color}"
 
-                      r=$(printf "%d" 0x''${hex:1:2})
-                      g=$(printf "%d" 0x''${hex:3:2})
-                      b=$(printf "%d" 0x''${hex:5:2})
+                    r=$(printf "%d" 0x''${hex:1:2})
+                    g=$(printf "%d" 0x''${hex:3:2})
+                    b=$(printf "%d" 0x''${hex:5:2})
 
-                      echo "$(printTuple $r), $(printTuple $g), $(printTuple $b)" > $out/color
-                    ''
-                  }/color"
-                );
+                    echo "[$(printTuple $r), $(printTuple $g), $(printTuple $b)]" > $out/color
+                  ''
+                }/color";
 
               generateWallpaper =
                 source:
@@ -124,7 +122,25 @@
                   value = last stringParts;
                 in
                 {
-                  color = mkRON "tuple" (generateColor value);
+                  color = mkRON "enum" {
+                    value = [
+                      {
+                        colors =
+                          let
+                            color = mkRON "tuple" (builtins.fromJSON (generateColor value));
+                          in
+                          [
+                            color
+                            color
+                          ];
+
+                        radius = 180.0;
+                      }
+                    ];
+
+                    variant = "Gradient";
+                  };
+
                   path = value;
                 }
                 .${type};
