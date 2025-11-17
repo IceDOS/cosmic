@@ -78,7 +78,7 @@
 
           inherit (plugins) center left right;
 
-          inherit (lib) concatMapStringsSep mapAttrs mkIf;
+          inherit (lib) concatMapStringsSep mapAttrs;
           force = true;
         in
         {

@@ -109,76 +109,74 @@
                 inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
               in
               {
-                wayland.desktopManager.cosmic = {
-                  compositor = {
-                    input_default = {
-                      acceleration = mkRON "optional" {
-                        profile = mkRON "optional" (mkRON "enum" (if acceleration then "Adaptive" else "Flat"));
+                home.file.".config/cosmic/com.system76.CosmicComp/v1/input_default" = {
+                  force = true;
 
-                        speed =
-                          if
-                            (abortIf (
-                              mouseSpeed < 0 || mouseSpeed > 100
-                            ) "The cosmic mouse speed has to be set between 0 - 100, ${toString mouseSpeed} is out of range!")
-                          then
-                            let
-                              slope = 0.014142;
-                              y = -0.809999;
-                              speed' = builtins.fromJSON "${toString ((slope * mouseSpeed) + y)}";
-                            in
-                            speed'
-                          else
-                            0;
-                      };
-
-                      left_handed = mkRON "optional" primaryButtonRight;
-
-                      scroll_config = mkRON "optional" {
-                        method = mkRON "optional" (mkRON "enum" "Edge");
-                        natural_scroll = mkRON "optional" naturalScrolling;
-                        scroll_button = mkRON "optional" 0;
-
-                        scroll_factor =
-                          let
-                            transformScrollingSpeed =
-                              speed:
-                              let
-                                inherit (lib) readFile;
-                                inherit (pkgs) bc runCommand;
-                                bcBin = "${bc}/bin/bc";
-                                speed' = toString speed;
-                              in
+                  text = ''
+                    (
+                        state: Enabled,
+                        acceleration: Some((
+                            profile: Some(${if acceleration then "Adaptive" else "Flat"}),
+                            speed: ${
                               if
                                 (abortIf (
-                                  speed < 1 || speed > 100
-                                ) "The cosmic scrolling speed has to be set between 1 - 100, ${speed'} is out of range!")
+                                  mouseSpeed < 0 || mouseSpeed > 100
+                                ) "The cosmic mouse speed has to be set between 0 - 100, ${toString mouseSpeed} is out of range!")
                               then
-                                readFile "${runCommand "cosmic-scrolling-speed-calculator" { } ''
-                                  raw_result=$(echo "
-                                    scale=6;
-                                    exponent = (0.1 * ${speed'}) - 5;
-                                    base_ln = l(2);
-                                    y = e(exponent * base_ln);
-                                    y
-                                  " | ${bcBin} -l)
-
-                                  final_result=$(printf "%.6f" "$raw_result" | sed 's/^\(.*\)\.0*$/\1/')
-
-                                  echo "$final_result" > $out
-                                ''}"
+                                let
+                                  slope = 0.014142271248762554;
+                                  y = -0.8099999999999998;
+                                in
+                                "${toString ((slope * mouseSpeed) + y)}"
                               else
-                                "";
-                          in
-                          mkRON "optional" (
-                            let
-                              speed = builtins.fromJSON (transformScrollingSpeed scrollingSpeed);
-                            in
-                            # fromJSON turns 1.0 float into 1 int, adding 0.0 turns it into a float
-                            if (speed == 1) then speed + 0.0 else speed
-                          );
-                      };
-                    };
+                                ""
+                            },
+                        )),
+                        left_handed: Some(${if primaryButtonRight then "true" else "false"}),
+                        scroll_config: Some((
+                            method: None,
+                            natural_scroll: Some(${if naturalScrolling then "true" else "false"}),
+                            scroll_button: None,
+                            scroll_factor: Some(${
+                              let
+                                transformScrollingSpeed =
+                                  speed:
+                                  let
+                                    inherit (lib) readFile;
+                                    inherit (pkgs) bc runCommand;
+                                    bcBin = "${bc}/bin/bc";
+                                    speed' = toString speed;
+                                  in
+                                  if
+                                    (abortIf (
+                                      speed < 1 || speed > 100
+                                    ) "The cosmic scrolling speed has to be set between 1 - 100, ${speed'} is out of range!")
+                                  then
+                                    readFile "${runCommand "cosmic-scrolling-speed-calculator" { } ''
+                                      raw_result=$(echo "
+                                        scale=17;
+                                        exponent = (0.1 * ${speed'}) - 5;
+                                        base_ln = l(2);
+                                        y = e(exponent * base_ln);
+                                        y
+                                      " | ${bcBin} -l)
 
+                                      final_result=$(printf "%.17f" "$raw_result" | sed 's/^\(.*\)\.0*$/\1/')
+
+                                      echo "$final_result" > $out
+                                    ''}"
+                                  else
+                                    "";
+                              in
+                              "${transformScrollingSpeed scrollingSpeed}"
+                            }),
+                        )),
+                    )
+                  '';
+                };
+
+                wayland.desktopManager.cosmic = {
+                  compositor = {
                     keyboard_config = {
                       numlock_state = mkRON "enum" (
                         if
