@@ -4,7 +4,7 @@
   options.icedos.desktop.cosmic.x11 =
     let
       inherit (icedosLib) mkBoolOption mkStrOption;
-      inherit (lib) readFile;
+      inherit (lib) readFile mkOption;
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.x11)
         globalShortcuts
@@ -15,7 +15,7 @@
     {
       globalShortcuts = mkStrOption { default = globalShortcuts; };
       mouseEvents = mkBoolOption { default = mouseEvents; };
-      scaling = mkStrOption { default = scaling; };
+      scaling = mkOption { default = scaling; };
     };
 
   outputs.nixosModules =
@@ -29,7 +29,7 @@
         }:
 
         let
-          inherit (lib) elem mapAttrs;
+          inherit (lib) mapAttrs isBool;
           inherit (config.icedos) desktop users;
         in
         {
@@ -42,25 +42,12 @@
                 scaling
                 ;
 
+              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
+
               force = true;
             in
             {
               home.file = {
-                ".config/cosmic/com.system76.CosmicComp/v1/descale_xwayland" = {
-                  inherit force;
-
-                  text =
-                    if
-                      (elem scaling [
-                        "true"
-                        "false"
-                      ])
-                    then
-                      "r#${scaling}"
-                    else
-                      scaling;
-                };
-
                 ".config/cosmic/com.system76.CosmicComp/v1/xwayland_eavesdropping" = {
                   inherit force;
 
@@ -71,6 +58,10 @@
                     )
                   '';
                 };
+              };
+
+              wayland.desktopManager.cosmic.compositor = {
+                descale_xwayland = if (isBool scaling) then scaling else mkRON "enum" scaling;
               };
             }
           ) users;
