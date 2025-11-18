@@ -7,15 +7,13 @@
 
       inherit
         ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.panel.extensions.clipboardManager)
-        horizontal
         privateMode
         uniqueSession
         ;
 
-        inherit (icedosLib) mkBoolOption;
+      inherit (icedosLib) mkBoolOption;
     in
     {
-      horizontal = mkBoolOption { default = horizontal; };
       privateMode = mkBoolOption { default = privateMode; };
       uniqueSession = mkBoolOption { default = uniqueSession; };
     };
@@ -51,23 +49,19 @@
           home-manager.users =
             let
               inherit (config.icedos) desktop users;
-              inherit (desktop.cosmic.panel.extensions.clipboardManager) horizontal privateMode uniqueSession;
+              inherit (desktop.cosmic.panel.extensions.clipboardManager) privateMode uniqueSession;
               inherit (lib) mapAttrs;
               force = true;
+              pluginFolder = ".config/cosmic/io.github.cosmic_utils.cosmic-ext-applet-clipboard-manager/v3";
             in
             mapAttrs (user: _: {
               home.file = {
-                ".config/cosmic/io.github.wiiznokes.cosmic-ext-applet-clipboard-manager/v3/horizontal" = {
-                  inherit force;
-                  text = if horizontal then "true" else "false";
-                };
-
-                ".config/cosmic/io.github.wiiznokes.cosmic-ext-applet-clipboard-manager/v3/private_mode" = {
+                "${pluginFolder}/private_mode" = {
                   inherit force;
                   text = if privateMode then "true" else "false";
                 };
 
-                ".config/cosmic/io.github.wiiznokes.cosmic-ext-applet-clipboard-manager/v3/unique_session" = {
+                "${pluginFolder}/unique_session" = {
                   inherit force;
                   text = if uniqueSession then "true" else "false";
                 };
