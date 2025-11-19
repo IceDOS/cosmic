@@ -6,6 +6,7 @@
       inherit (icedosLib)
         mkBoolOption
         mkNumberOption
+        mkStrListOption
         mkStrOption
         mkSubmoduleListOption
         ;
@@ -46,7 +47,7 @@
           action = mkStrOption { default = ""; };
           command = mkStrOption { default = ""; };
           description = mkStrOption { default = ""; };
-          key = mkStrOption { default = ""; };
+          keys = mkStrListOption { default = [ ]; };
           variant = mkStrOption { default = ""; };
         };
 
@@ -101,7 +102,7 @@
                 ;
 
               inherit (icedosLib) abortIf;
-              inherit (lib) elem mapAttrs;
+              inherit (lib) elem flatten mapAttrs;
             in
             mapAttrs (
               user: _:
@@ -301,58 +302,64 @@
                             action = superKeyAction;
                             command = "";
                             description = "";
-                            key = "Super";
+                            keys = [ "Super" ];
                           }
                           // (if (superKeyAction != "Disable") then { variant = "System"; } else { variant = ""; })
                         else
                           { };
                     in
-                    map (
+                    flatten (map (
                       shortcut:
                       let
                         inherit (shortcut)
                           command
                           description
-                          key
+                          keys
                           variant
                           ;
 
                         shortcutAction = shortcut.action;
+
+                        generateShortcut =
+                          key:
+                          if (variant == "System" && key != "" && shortcutAction != "") then
+                            {
+                              inherit key;
+
+                              action = mkRON "enum" {
+                                inherit variant;
+
+                                value = [
+                                  (mkRON "enum" shortcutAction)
+                                ];
+                              };
+                            }
+                          else if (command != "" && variant != "" && key != "") then
+                            {
+                              inherit key;
+
+                              action = mkRON "enum" {
+                                inherit variant;
+
+                                value = [
+                                  command
+                                ];
+                              };
+
+                              description = mkRON "optional" description;
+                            }
+                          else if (shortcutAction != "" && key != "") then
+                            {
+                              inherit key;
+                              action = mkRON "enum" shortcutAction;
+                            }
+                          else
+                            { };
+
+                        generatedShortcutsFromKeys = map (key: generateShortcut key) keys;
                       in
-                      if (variant == "System" && key != "" && shortcutAction != "") then
-                        {
-                          inherit key;
-
-                          action = mkRON "enum" {
-                            inherit variant;
-
-                            value = [
-                              (mkRON "enum" shortcutAction)
-                            ];
-                          };
-                        }
-                      else if (command != "" && variant != "" && key != "") then
-                        {
-                          inherit key;
-
-                          action = mkRON "enum" {
-                            inherit variant;
-
-                            value = [
-                              command
-                            ];
-                          };
-
-                          description = mkRON "optional" description;
-                        }
-                      else if (shortcutAction != "" && key != "") then
-                        {
-                          inherit key;
-                          action = mkRON "enum" shortcutAction;
-                        }
-                      else
-                        { }
-                    ) (shortcuts ++ [ superKeyShortcut ])
+                      generatedShortcutsFromKeys
+                    ) (shortcuts ++ [ superKeyShortcut ]))
                   );
                 };
               }
