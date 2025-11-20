@@ -24,6 +24,7 @@
         monitor
         opacity
         plugins
+        favorites
         position
         size
         themeMode
@@ -34,6 +35,7 @@
     {
       autohide = mkBoolOption { default = autohide; };
       expand = mkBoolOption { default = expand; };
+      favorites = mkStrListOption { default = favorites; };
       gaps = mkBoolOption { default = gaps; };
       monitor = mkStrOption { default = monitor; };
       opacity = mkNumberOption { default = opacity; };
@@ -65,6 +67,7 @@
           inherit (cosmic.panel)
             autohide
             expand
+            favorites
             gaps
             monitor
             opacity
@@ -76,7 +79,12 @@
 
           inherit (plugins) center left right;
 
-          inherit (lib) concatMapStringsSep mapAttrs;
+          inherit (lib)
+            concatMapStringsSep
+            mapAttrs
+            mkIf
+            length
+            ;
           force = true;
         in
         {
@@ -160,6 +168,10 @@
                 text = size;
               };
             };
+
+            wayland.desktopManager.cosmic.applets.app-list.settings.favorites = mkIf (
+              (length favorites) > 0
+            ) favorites;
           }) users;
         }
       )

@@ -1,6 +1,7 @@
 [icedos.desktop.cosmic.panel]
 autohide = false
 expand = true
+favorites = []
 gaps = false
 monitor = "" # Example "DP-2"
 position = "Top" # Left, Right, Top, Bottom
