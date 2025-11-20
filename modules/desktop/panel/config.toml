@@ -1,7 +1,6 @@
 [icedos.desktop.cosmic.panel]
 autohide = false
 expand = true
-favorites = []
 gaps = false
 monitor = "" # Example "DP-2"
 position = "Top" # Left, Right, Top, Bottom
@@ -25,3 +24,6 @@ right = [
   "com.system76.CosmicAppletTime",
   "com.system76.CosmicAppletPower",
 ]
+
+[icedos.desktop.cosmic.users.username]
+panelFavorites = []
