@@ -1,6 +1,3 @@
-[icedos.desktop.cosmic.windowManagement]
-snapWindowsToEdges = true
-
 [icedos.desktop.cosmic.windowManagement.controls]
 activeHint = false
 maximize = true
@@ -10,3 +7,7 @@ minimize = true
 cursorFollowsFocus = false
 followsCursor = false
 followsCursorDelay = 0 # ms
+
+[icedos.desktop.cosmic.windowManagement.snapWindowsToEdges]
+enable = true
+threshold = 25

@@ -46,7 +46,14 @@
           followsCursorDelay = mkNumberOption { default = followsCursorDelay; };
         };
 
-      snapWindowsToEdges = mkBoolOption { default = snapWindowsToEdges; };
+      snapWindowsToEdges =
+        let
+          inherit (snapWindowsToEdges) enable threshold;
+        in
+        {
+          enable = mkBoolOption { default = enable; };
+          threshold = mkNumberOption { default = threshold; };
+        };
     };
 
   outputs.nixosModules =
@@ -89,7 +96,13 @@
               compositor = {
                 active_hint = activeHint;
                 cursor_follows_focus = cursorFollowsFocus;
-                edge_snap_threshold = if snapWindowsToEdges then 10 else 0;
+
+                edge_snap_threshold =
+                  let
+                    inherit (snapWindowsToEdges) enable threshold;
+                  in
+                  if enable then threshold else 0;
+
                 focus_follows_cursor = followsCursor;
                 focus_follows_cursor_delay = followsCursorDelay;
               };
