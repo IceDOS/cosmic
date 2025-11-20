@@ -1,7 +1,7 @@
 [icedos.desktop.cosmic.appearance]
 activeHint = 1
-gaps = 1
+gaps = 0
 gtkTheming = false
 interfaceDensity = "Standard" # Compact, Standard, Spacious
 mode = "dark" # auto, dark, light
-roundness = "round" # round, slightly-round, square
+roundness = "slightly-round" # round, slightly-round, square
