@@ -61,7 +61,7 @@
               };
 
               wayland.desktopManager.cosmic.compositor = {
-                descale_xwayland = if (isBool scaling) then scaling else mkRON "enum" scaling;
+                descale_xwayland = if (isBool scaling) then scaling else mkRON "raw" scaling;
               };
             }
           ) users;
