@@ -23,6 +23,7 @@
             cosmic-edit
             cosmic-player
             cosmic-reader
+            cosmic-store
             cosmic-term
           ];
 
