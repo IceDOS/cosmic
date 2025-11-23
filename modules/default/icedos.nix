@@ -55,5 +55,42 @@
       )
     ];
 
-  meta.name = "default";
+  meta = {
+    name = "default";
+
+    dependencies = [
+      {
+        modules = [
+          "appearance"
+          "cosmic-files"
+          "cosmic-screenshot"
+          "dock"
+          "input"
+          "magnifier"
+          "mono-sound"
+          "panel"
+          "power"
+          "sound"
+          "startup"
+          "time"
+          "wallpaper"
+          "window-management"
+          "workspaces"
+          "x11"
+        ];
+      }
+
+      {
+        url = "github:icedos/desktop";
+      }
+
+      {
+        url = "github:icedos/apps";
+        modules = [
+          "gnome-control-center"
+          "walker"
+        ];
+      }
+    ];
+  };
 }
