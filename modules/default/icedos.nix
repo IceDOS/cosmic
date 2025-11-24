@@ -82,7 +82,7 @@
       }
 
       {
-        url = "path:/home/icedborn/.code/icedos/desktop";
+        url = "github:icedos/desktop";
       }
 
       {
