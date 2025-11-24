@@ -16,6 +16,7 @@ right = [
   "io.github.cosmic_utils.cosmic-ext-applet-clipboard-manager",
   "com.system76.CosmicAppletStatusArea",
   "com.system76.CosmicAppletInputSources",
+  "net.tropicbliss.CosmicExtAppletCaffeine",
   "com.system76.CosmicAppletBluetooth",
   "com.system76.CosmicAppletAudio",
   "com.system76.CosmicAppletBattery",

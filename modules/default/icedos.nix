@@ -15,6 +15,7 @@
 
         {
           environment.systemPackages = with pkgs; [
+            cosmic-ext-applet-caffeine
             cosmic-ext-applet-external-monitor-brightness
             cosmic-ext-tweaks
           ];
@@ -81,7 +82,7 @@
       }
 
       {
-        url = "github:icedos/desktop";
+        url = "path:/home/icedborn/.code/icedos/desktop";
       }
 
       {
