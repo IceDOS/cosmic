@@ -80,13 +80,17 @@
           "x11"
         ];
       }
+    ];
 
+    optionalDependencies = [
       {
         url = "github:icedos/desktop";
+        modules = [ "cosmic-greeter" ];
       }
 
       {
         url = "github:icedos/apps";
+
         modules = [
           "gnome-control-center"
           "walker"
