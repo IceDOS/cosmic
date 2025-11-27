@@ -55,7 +55,7 @@
         themeMode = mkStrOption { default = themeMode; };
       };
 
-      users = mkSubmoduleAttrsOption { } {
+      users = mkSubmoduleAttrsOption { default = { }; } {
         panelFavorites = mkStrListOption { default = users.username.panelFavorites; };
       };
     };
