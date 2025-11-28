@@ -18,6 +18,7 @@
             cosmic-ext-applet-caffeine
             cosmic-ext-applet-external-monitor-brightness
             cosmic-ext-tweaks
+            file-roller
           ];
 
           environment.cosmic.excludePackages = with pkgs; [
