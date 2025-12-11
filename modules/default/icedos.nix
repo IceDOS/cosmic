@@ -1,4 +1,4 @@
-{ ... }:
+{ icedosLib, lib, ... }:
 
 {
   inputs.cosmic-manager = {
@@ -7,12 +7,29 @@
     inputs.home-manager.follows = "home-manager";
   };
 
+  options.icedos.desktop.cosmic.excludeDefaultPackages =
+    let
+      inherit (icedosLib) mkStrListOption;
+      inherit (lib) readFile;
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic) excludeDefaultPackages;
+    in
+    mkStrListOption { default = excludeDefaultPackages; };
+
   outputs.nixosModules =
     { inputs, ... }:
     [
       (
-        { pkgs, ... }:
+        {
+          config,
+          icedosLib,
+          pkgs,
+          ...
+        }:
 
+        let
+          inherit (config.icedos.desktop.cosmic) excludeDefaultPackages;
+          inherit (icedosLib) pkgMapper;
+        in
         {
           environment.systemPackages = with pkgs; [
             cosmic-ext-applet-caffeine
@@ -22,13 +39,16 @@
             file-roller
           ];
 
-          environment.cosmic.excludePackages = with pkgs; [
-            cosmic-edit
-            cosmic-player
-            cosmic-reader
-            cosmic-store
-            cosmic-term
-          ];
+          environment.cosmic.excludePackages =
+            with pkgs;
+            [
+              cosmic-edit
+              cosmic-player
+              cosmic-reader
+              cosmic-store
+              cosmic-term
+            ]
+            ++ (pkgMapper excludeDefaultPackages);
 
           services.desktopManager.cosmic.enable = true;
         }
