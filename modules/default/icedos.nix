@@ -17,6 +17,7 @@
           environment.systemPackages = with pkgs; [
             cosmic-ext-applet-caffeine
             cosmic-ext-applet-external-monitor-brightness
+            cosmic-ext-applet-privacy-indicator
             cosmic-ext-tweaks
             file-roller
           ];

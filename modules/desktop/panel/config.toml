@@ -9,9 +9,10 @@ size = "XS" # XS, S, M, L, XL
 opacity = 100 # Percentage
 
 [icedos.desktop.cosmic.panel.plugins]
-center = ["com.system76.CosmicAppList"]
 left = ["com.system76.CosmicAppletWorkspaces"]
+center = ["com.system76.CosmicAppList"]
 right = [
+  "dev.DBrox.CosmicPrivacyIndicator",
   "dev.dominiccgeh.CosmicAppletEmojiSelector",
   "io.github.cosmic_utils.cosmic-ext-applet-clipboard-manager",
   "com.system76.CosmicAppletStatusArea",
