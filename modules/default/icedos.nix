@@ -7,13 +7,19 @@
     inputs.home-manager.follows = "home-manager";
   };
 
-  options.icedos.desktop.cosmic.excludeDefaultPackages =
+  options.icedos.desktop.cosmic =
     let
-      inherit (icedosLib) mkStrListOption;
+      inherit (icedosLib) mkBoolOption mkStrListOption;
       inherit (lib) readFile;
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic) excludeDefaultPackages;
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic)
+        disableExcludedPackagesWarning
+        excludeDefaultPackages
+        ;
     in
-    mkStrListOption { default = excludeDefaultPackages; };
+    {
+      disableExcludedPackagesWarning = mkBoolOption { default = disableExcludedPackagesWarning; };
+      excludeDefaultPackages = mkStrListOption { default = excludeDefaultPackages; };
+    };
 
   outputs.nixosModules =
     { inputs, ... }:
@@ -27,7 +33,7 @@
         }:
 
         let
-          inherit (config.icedos.desktop.cosmic) excludeDefaultPackages;
+          inherit (config.icedos.desktop.cosmic) disableExcludedPackagesWarning excludeDefaultPackages;
           inherit (icedosLib) pkgMapper;
         in
         {
@@ -50,7 +56,10 @@
             ]
             ++ (pkgMapper excludeDefaultPackages);
 
-          services.desktopManager.cosmic.enable = true;
+          services.desktopManager.cosmic = {
+            enable = true;
+            showExcludedPkgsWarning = (!disableExcludedPackagesWarning);
+          };
         }
       )
 

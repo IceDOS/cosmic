@@ -1,2 +1,3 @@
 [icedos.desktop.cosmic]
+disableExcludedPackagesWarning = false
 excludeDefaultPackages = []
