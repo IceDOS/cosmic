@@ -12,7 +12,6 @@ opacity = 100 # Percentage
 left = ["com.system76.CosmicAppletWorkspaces"]
 center = ["com.system76.CosmicAppList"]
 right = [
-  "dev.DBrox.CosmicPrivacyIndicator",
   "dev.dominiccgeh.CosmicAppletEmojiSelector",
   "io.github.cosmic_utils.cosmic-ext-applet-clipboard-manager",
   "com.system76.CosmicAppletStatusArea",
