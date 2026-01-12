@@ -63,6 +63,7 @@
         {
           config,
           lib,
+          pkgs,
           ...
         }:
         let
@@ -84,8 +85,11 @@
             ;
 
           inherit (lib) mapAttrs;
+          inherit (pkgs) callPackage;
         in
         {
+          environment.systemPackages = [ (callPackage ./cos-cli/package.nix { }) ];
+
           home-manager.users = mapAttrs (user: _: {
             wayland.desktopManager.cosmic = {
               appearance.toolkit = {
