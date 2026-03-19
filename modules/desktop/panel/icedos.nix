@@ -34,11 +34,16 @@
         themeMode
         ;
 
+      inherit (autohide) enable alwaysHide;
       inherit (plugins) center left right;
     in
     {
       panel = {
-        autohide = mkBoolOption { default = autohide; };
+        autohide = {
+          enable = mkBoolOption { default = enable; };
+          alwaysHide = mkBoolOption { default = alwaysHide; };
+        };
+
         expand = mkBoolOption { default = expand; };
         gaps = mkBoolOption { default = gaps; };
         monitor = mkStrOption { default = monitor; };
@@ -70,39 +75,40 @@
           ...
         }:
         let
-          inherit (config.icedos) users;
+          inherit (config.icedos) desktop users;
           inherit (lib) mapAttrs;
+          inherit (desktop) cosmic;
+          inherit (cosmic) panel;
+
+          inherit (panel)
+            autohide
+            expand
+            gaps
+            monitor
+            opacity
+            plugins
+            position
+            size
+            themeMode
+            ;
+
+          inherit (autohide) enable alwaysHide;
+          inherit (plugins) center left right;
+
+          inherit (lib)
+            concatMapStringsSep
+            mkIf
+            length
+            ;
+
+          force = true;
         in
         {
           home-manager.users = mapAttrs (
             user: _:
             let
-              inherit (config.icedos) desktop;
-              inherit (desktop) cosmic;
-              inherit (cosmic) panel users;
-
-              inherit (panel)
-                autohide
-                expand
-                gaps
-                monitor
-                opacity
-                plugins
-                position
-                size
-                themeMode
-                ;
-
+              inherit (cosmic) users;
               inherit (users.${user}) panelFavorites;
-
-              inherit (plugins) center left right;
-
-              inherit (lib)
-                concatMapStringsSep
-                mkIf
-                length
-                ;
-              force = true;
             in
             {
               home.file = {
@@ -118,8 +124,9 @@
 
                 ".config/cosmic/com.system76.CosmicPanel.Panel/v1/autohide" = {
                   inherit force;
+
                   text =
-                    if autohide then
+                    if enable then
                       ''
                         Some((
                             wait_time: 1000,
@@ -139,7 +146,7 @@
 
                 ".config/cosmic/com.system76.CosmicPanel.Panel/v1/exclusive_zone" = {
                   inherit force;
-                  text = if autohide then "true" else "false";
+                  text = if enable then "true" else "false";
                 };
 
                 ".config/cosmic/com.system76.CosmicPanel.Panel/v1/expand_to_edges" = {
@@ -190,6 +197,21 @@
               ) panelFavorites;
             }
           ) users;
+
+          nixpkgs.overlays = mkIf alwaysHide [
+            (final: prev: {
+              cosmic-panel = prev.cosmic-panel.overrideAttrs (oldAttrs: {
+                postPatch = (oldAttrs.postPatch or "") + ''
+                  substituteInPlace cosmic-panel-bin/src/space/panel_space.rs \
+                    --replace-fail \
+                    'let intellihide = self.overlap_notify.is_some();' \
+                    'let intellihide = false;'
+                '';
+
+                doCheck = false;
+              });
+            })
+          ];
         }
       )
     ];
