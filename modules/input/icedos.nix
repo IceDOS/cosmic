@@ -20,6 +20,7 @@
         composeKey
         keyboardLayouts
         numlock
+        perWindowLayout
         repeatDelay
         repeatRate
         superKeyAction
@@ -40,6 +41,7 @@
         composeKey = mkStrOption { default = composeKey; };
         keyboardLayouts = mkStrOption { default = keyboardLayouts; };
         numlock = mkStrOption { default = numlock; };
+        perWindowLayout = mkBoolOption { default = perWindowLayout; };
         repeatDelay = mkNumberOption { default = repeatDelay; };
         repeatRate = mkNumberOption { default = repeatRate; };
 
@@ -308,62 +310,86 @@
                         else
                           { };
                     in
-                    flatten (map (
-                      shortcut:
-                      let
-                        inherit (shortcut)
-                          command
-                          description
-                          keys
-                          variant
-                          ;
+                    flatten (
+                      map (
+                        shortcut:
+                        let
+                          inherit (shortcut)
+                            command
+                            description
+                            keys
+                            variant
+                            ;
 
-                        shortcutAction = shortcut.action;
+                          shortcutAction = shortcut.action;
 
-                        generateShortcut =
-                          key:
-                          if (variant == "System" && key != "" && shortcutAction != "") then
-                            {
-                              inherit key;
+                          generateShortcut =
+                            key:
+                            if (variant == "System" && key != "" && shortcutAction != "") then
+                              {
+                                inherit key;
 
-                              action = mkRON "enum" {
-                                inherit variant;
+                                action = mkRON "enum" {
+                                  inherit variant;
 
-                                value = [
-                                  (mkRON "enum" shortcutAction)
-                                ];
-                              };
-                            }
-                          else if (command != "" && variant != "" && key != "") then
-                            {
-                              inherit key;
+                                  value = [
+                                    (mkRON "enum" shortcutAction)
+                                  ];
+                                };
+                              }
+                            else if (command != "" && variant != "" && key != "") then
+                              {
+                                inherit key;
 
-                              action = mkRON "enum" {
-                                inherit variant;
+                                action = mkRON "enum" {
+                                  inherit variant;
 
-                                value = [
-                                  command
-                                ];
-                              };
+                                  value = [
+                                    command
+                                  ];
+                                };
 
-                              description = mkRON "optional" description;
-                            }
-                          else if (shortcutAction != "" && key != "") then
-                            {
-                              inherit key;
-                              action = mkRON "enum" shortcutAction;
-                            }
-                          else
-                            { };
+                                description = mkRON "optional" description;
+                              }
+                            else if (shortcutAction != "" && key != "") then
+                              {
+                                inherit key;
+                                action = mkRON "enum" shortcutAction;
+                              }
+                            else
+                              { };
 
-                        generatedShortcutsFromKeys = map (key: generateShortcut key) keys;
-                      in
-                      generatedShortcutsFromKeys
-                    ) (shortcuts ++ [ superKeyShortcut ]))
+                          generatedShortcutsFromKeys = map (key: generateShortcut key) keys;
+                        in
+                        generatedShortcutsFromKeys
+                      ) (shortcuts ++ [ superKeyShortcut ])
+                    )
                   );
                 };
               }
             ) users;
+        }
+      )
+
+      # Per window layout
+      (
+        { config, lib, ... }:
+        let
+          inherit (config.icedos.desktop.cosmic.input.keyboard) perWindowLayout;
+          inherit (lib) mkIf;
+        in
+        {
+          nixpkgs.overlays = mkIf perWindowLayout [
+            (final: prev: {
+              cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
+                patches = (old.patches or [ ]) ++ [
+                  ./per-window-layout.patch
+                ];
+
+                doCheck = false;
+              });
+            })
+          ];
         }
       )
     ];
