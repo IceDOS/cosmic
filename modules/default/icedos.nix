@@ -12,11 +12,13 @@
       inherit (icedosLib) mkBoolOption mkStrListOption;
       inherit (lib) readFile;
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic)
+        alternateAnimations
         disableExcludedPackagesWarning
         excludeDefaultPackages
         ;
     in
     {
+      alternateAnimations = mkBoolOption { default = alternateAnimations; };
       disableExcludedPackagesWarning = mkBoolOption { default = disableExcludedPackagesWarning; };
       excludeDefaultPackages = mkStrListOption { default = excludeDefaultPackages; };
     };
@@ -83,6 +85,28 @@
 
             wayland.desktopManager.cosmic.enable = true;
           }) users;
+        }
+      )
+
+      # Alternate animations
+      (
+        { config, lib, ... }:
+        let
+          inherit (config.icedos.desktop.cosmic) alternateAnimations;
+          inherit (lib) mkIf;
+        in
+        {
+          nixpkgs.overlays = mkIf alternateAnimations [
+            (final: prev: {
+              cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
+                patches = (old.patches or [ ]) ++ [
+                  ./alternate-animations.patch
+                ];
+
+                doCheck = false;
+              });
+            })
+          ];
         }
       )
     ];
