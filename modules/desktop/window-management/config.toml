@@ -1,3 +1,6 @@
+[icedos.desktop.cosmic.windowManagement]
+cli = false
+
 [icedos.desktop.cosmic.windowManagement.controls]
 activeHint = false
 maximize = true

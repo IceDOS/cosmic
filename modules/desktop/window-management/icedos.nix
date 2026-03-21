@@ -12,12 +12,15 @@
           in
           (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.windowManagement
         )
+        cli
         controls
         focus
         snapWindowsToEdges
         ;
     in
     {
+      cli = mkBoolOption { default = cli; };
+
       controls =
         let
           inherit (controls)
@@ -70,7 +73,12 @@
           inherit (config.icedos) desktop users;
           inherit (desktop) cosmic;
 
-          inherit (cosmic.windowManagement) controls focus snapWindowsToEdges;
+          inherit (cosmic.windowManagement)
+            cli
+            controls
+            focus
+            snapWindowsToEdges
+            ;
 
           inherit (controls)
             activeHint
@@ -84,11 +92,11 @@
             followsCursorDelay
             ;
 
-          inherit (lib) mapAttrs;
+          inherit (lib) mapAttrs mkIf;
           inherit (pkgs) callPackage;
         in
         {
-          environment.systemPackages = [ (callPackage ./cos-cli/package.nix { }) ];
+          environment.systemPackages = mkIf cli [ (callPackage ./cos-cli/package.nix { }) ];
 
           home-manager.users = mapAttrs (user: _: {
             wayland.desktopManager.cosmic = {
