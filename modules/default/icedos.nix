@@ -30,22 +30,42 @@
         {
           config,
           icedosLib,
+          lib,
           pkgs,
           ...
         }:
 
         let
-          inherit (config.icedos.desktop.cosmic) disableExcludedPackagesWarning excludeDefaultPackages;
+          inherit (config.icedos.desktop.cosmic)
+            disableExcludedPackagesWarning
+            dock
+            excludeDefaultPackages
+            panel
+            ;
+
+          allPlugins =
+            dock.plugins.center
+            ++ dock.plugins.left
+            ++ dock.plugins.right
+            ++ panel.plugins.center
+            ++ panel.plugins.left
+            ++ panel.plugins.right;
+
+          checkIfPluginsExists = plugin: elem plugin allPlugins;
+
           inherit (icedosLib) pkgMapper;
+          inherit (lib) elem optional;
         in
         {
-          environment.systemPackages = with pkgs; [
-            cosmic-ext-applet-caffeine
-            cosmic-ext-applet-external-monitor-brightness
-            cosmic-ext-applet-privacy-indicator
-            cosmic-ext-tweaks
-            file-roller
-          ];
+          environment.systemPackages =
+            with pkgs;
+            [
+              cosmic-ext-tweaks
+              file-roller
+            ]
+            ++ optional (checkIfPluginsExists "dev.DBrox.CosmicPrivacyIndicator") pkgs.cosmic-ext-applet-privacy-indicator
+            ++ optional (checkIfPluginsExists "io.github.cosmic_utils.cosmic-ext-applet-external-monitor-brightness") pkgs.cosmic-ext-applet-external-monitor-brightness
+            ++ optional (checkIfPluginsExists "net.tropicbliss.CosmicExtAppletCaffeine") pkgs.cosmic-ext-applet-caffeine;
 
           environment.cosmic.excludePackages =
             with pkgs;
