@@ -2,6 +2,7 @@
 activeHint = 1
 gaps = 0
 gtkTheming = false
+fixWrongBordersWithNoGaps = false
 interfaceDensity = "Standard" # Compact, Standard, Spacious
 mode = "dark" # auto, dark, light
 roundness = "slightly-round" # round, slightly-round, square
