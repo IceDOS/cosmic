@@ -69,7 +69,7 @@ index 299cb4f..7550f87 100644
      output::Output,
      reexports::wayland_server::{Resource, protocol::wl_surface::WlSurface},
      utils::{IsAlive, Point, SERIAL_COUNTER, Serial},
-@@ -392,6 +392,35 @@ fn update_focus_state(
+@@ -392,6 +392,38 @@ fn update_focus_state(
          }) {
              keyboard.unset_grab(state);
          }
@@ -96,8 +96,11 @@ index 299cb4f..7550f87 100644
 +                    });
 +                let target_layout = Layout(group as u32);
 +                if target_layout != cur {
-+                    keyboard.with_xkb_state(state, |mut ctx| { ctx.set_layout(target_layout); });
-+                    sync_layout_indicator(state, &keymap_order, group);
++                    let layout_desc = keyboard.with_xkb_state(state, |mut ctx| {
++                        ctx.set_layout(target_layout);
++                        ctx.xkb().lock().unwrap().layout_name(target_layout).to_string()
++                    });
++                    sync_layout_indicator(state, &keymap_order, group, &layout_desc);
 +                }
 +            }
 +        }
@@ -105,7 +108,7 @@ index 299cb4f..7550f87 100644
          let serial = serial.unwrap_or_else(|| SERIAL_COUNTER.next_serial());
          state
              .common
-@@ -736,6 +765,27 @@ fn update_pointer_focus(state: &mut State, seat: &Seat<State>) {
+@@ -736,6 +768,31 @@ fn update_pointer_focus(state: &mut State, seat: &Seat<State>) {
      }
  }
 
@@ -117,7 +120,7 @@ index 299cb4f..7550f87 100644
 +    }
 +}
 +
-+fn sync_layout_indicator(state: &mut State, keymap_order: &[(String, String)], active: usize) {
++fn sync_layout_indicator(state: &mut State, keymap_order: &[(String, String)], active: usize, layout_desc: &str) {
 +    use cosmic_config::ConfigSet;
 +    let mut ordered = vec![keymap_order[active].clone()];
 +    ordered.extend(keymap_order.iter().enumerate()
@@ -128,6 +131,10 @@ index 299cb4f..7550f87 100644
 +    state.common.config.cosmic_conf.xkb_config = cfg.clone();
 +    state.common.ignore_xkb_config_changes.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 +    let _ = state.common.config.cosmic_helper.set("xkb_config", &cfg);
++    let _ = std::process::Command::new("cosmic-osd")
++        .arg("keyboard-layout")
++        .arg(layout_desc)
++        .spawn();
 +}
 +
  // Get the top-most layer, if any, with at least one surface with exclusive keyboard interactivity.

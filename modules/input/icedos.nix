@@ -19,6 +19,7 @@
         capsLockKey
         composeKey
         keyboardLayouts
+        keyboardLayoutOsd
         numlock
         perWindowLayout
         repeatDelay
@@ -40,6 +41,7 @@
         capsLockKey = mkStrOption { default = capsLockKey; };
         composeKey = mkStrOption { default = composeKey; };
         keyboardLayouts = mkStrOption { default = keyboardLayouts; };
+        keyboardLayoutOsd = mkBoolOption { default = keyboardLayoutOsd; };
         numlock = mkStrOption { default = numlock; };
         perWindowLayout = mkBoolOption { default = perWindowLayout; };
         repeatDelay = mkNumberOption { default = repeatDelay; };
@@ -383,7 +385,37 @@
             (final: prev: {
               cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
                 patches = (old.patches or [ ]) ++ [
-                  ./per-window-layout.patch
+                  ./patches/per-window-layout/cosmic-comp.patch
+                ];
+
+                doCheck = false;
+              });
+            })
+          ];
+        }
+      )
+
+      # Keyboard layout OSD
+      (
+        { config, lib, ... }:
+        let
+          inherit (config.icedos.desktop.cosmic.input.keyboard) keyboardLayoutOsd;
+          inherit (lib) mkIf;
+        in
+        {
+          nixpkgs.overlays = mkIf keyboardLayoutOsd [
+            (final: prev: {
+              cosmic-osd = prev.cosmic-osd.overrideAttrs (old: {
+                patches = (old.patches or [ ]) ++ [
+                  ./patches/keyboard-layout-osd/cosmic-osd.patch
+                ];
+
+                doCheck = false;
+              });
+
+              cosmic-settings-daemon = prev.cosmic-settings-daemon.overrideAttrs (old: {
+                patches = (old.patches or [ ]) ++ [
+                  ./patches/keyboard-layout-osd/cosmic-settings-daemon.patch
                 ];
 
                 doCheck = false;
