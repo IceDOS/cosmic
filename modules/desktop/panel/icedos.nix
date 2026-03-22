@@ -34,16 +34,11 @@
         themeMode
         ;
 
-      inherit (autohide) enable alwaysHide;
       inherit (plugins) center left right;
     in
     {
       panel = {
-        autohide = {
-          enable = mkBoolOption { default = enable; };
-          alwaysHide = mkBoolOption { default = alwaysHide; };
-        };
-
+        autohide = mkBoolOption { default = autohide; };
         expand = mkBoolOption { default = expand; };
         gaps = mkBoolOption { default = gaps; };
         monitor = mkStrOption { default = monitor; };
@@ -92,7 +87,6 @@
             themeMode
             ;
 
-          inherit (autohide) enable alwaysHide;
           inherit (plugins) center left right;
 
           inherit (lib)
@@ -126,7 +120,7 @@
                   inherit force;
 
                   text =
-                    if enable then
+                    if autohide then
                       ''
                         Some((
                             wait_time: 1000,
@@ -146,7 +140,7 @@
 
                 ".config/cosmic/com.system76.CosmicPanel.Panel/v1/exclusive_zone" = {
                   inherit force;
-                  text = if enable then "true" else "false";
+                  text = if autohide then "true" else "false";
                 };
 
                 ".config/cosmic/com.system76.CosmicPanel.Panel/v1/expand_to_edges" = {
@@ -197,21 +191,6 @@
               ) panelFavorites;
             }
           ) users;
-
-          nixpkgs.overlays = mkIf alwaysHide [
-            (final: prev: {
-              cosmic-panel = prev.cosmic-panel.overrideAttrs (oldAttrs: {
-                postPatch = (oldAttrs.postPatch or "") + ''
-                  substituteInPlace cosmic-panel-bin/src/space/panel_space.rs \
-                    --replace-fail \
-                    'let intellihide = self.overlap_notify.is_some();' \
-                    'let intellihide = false;'
-                '';
-
-                doCheck = false;
-              });
-            })
-          ];
         }
       )
     ];

@@ -1,4 +1,5 @@
 [icedos.desktop.cosmic.panel]
+autohide = false
 expand = true
 gaps = false
 monitor = "" # Example "DP-2"
@@ -6,10 +7,6 @@ position = "Top" # Left, Right, Top, Bottom
 themeMode = "ThemeDefault" # ThemeDefault, Dark, Light
 size = "XS" # XS, S, M, L, XL
 opacity = 100 # Percentage
-
-[icedos.desktop.cosmic.panel.autohide]
-enable = false
-alwaysHide = false
 
 [icedos.desktop.cosmic.panel.plugins]
 left = ["com.system76.CosmicAppletWorkspaces"]

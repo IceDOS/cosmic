@@ -12,7 +12,6 @@
           (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance
         )
         activeHint
-        fixWrongBordersWithNoGaps
         gaps
         gtkTheming
         interfaceDensity
@@ -22,7 +21,6 @@
     in
     {
       activeHint = mkNumberOption { default = activeHint; };
-      fixWrongBordersWithNoGaps = mkBoolOption { default = fixWrongBordersWithNoGaps; };
       gaps = mkNumberOption { default = gaps; };
       gtkTheming = mkBoolOption { default = gtkTheming; };
       interfaceDensity = mkStrOption { default = interfaceDensity; };
@@ -258,29 +256,6 @@
               };
             }
           ) users;
-        }
-      )
-
-      # Fix active window hint border clipped at screen edges in tiling mode
-      (
-        { config, lib, ... }:
-
-        let
-          inherit (config.icedos.desktop.cosmic.appearance) fixWrongBordersWithNoGaps;
-          inherit (lib) mkIf;
-        in
-        {
-          nixpkgs.overlays = mkIf fixWrongBordersWithNoGaps [
-            (final: prev: {
-              cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
-                patches = (old.patches or [ ]) ++ [
-                  ./patches/fix-tiling-hint-clipping.patch
-                ];
-
-                doCheck = false;
-              });
-            })
-          ];
         }
       )
     ];

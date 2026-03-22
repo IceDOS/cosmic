@@ -1,5 +1,5 @@
 diff --git a/src/backend/render/mod.rs b/src/backend/render/mod.rs
-index 0e22c8ea..2395f8d5 100644
+index 0e22c8e..2395f8d 100644
 --- a/src/backend/render/mod.rs
 +++ b/src/backend/render/mod.rs
 @@ -853,7 +853,7 @@ where
@@ -21,7 +21,7 @@ index 0e22c8ea..2395f8d5 100644
                      )
                      .into_iter()
 diff --git a/src/input/mod.rs b/src/input/mod.rs
-index c57eeca4..7fc681a3 100644
+index c57eeca..7fc681a 100644
 --- a/src/input/mod.rs
 +++ b/src/input/mod.rs
 @@ -2091,7 +2091,7 @@ impl State {
@@ -43,7 +43,7 @@ index c57eeca4..7fc681a3 100644
                          if let Some((surface, surface_loc)) = under_from_surface_tree(
                              surface,
 diff --git a/src/shell/element/stack/tabs.rs b/src/shell/element/stack/tabs.rs
-index fe084b55..4d3d07ad 100644
+index fe084b5..4d3d07a 100644
 --- a/src/shell/element/stack/tabs.rs
 +++ b/src/shell/element/stack/tabs.rs
 @@ -22,7 +22,7 @@ use cosmic::{
@@ -65,7 +65,7 @@ index fe084b55..4d3d07ad 100644
  
              Vector::new(
 diff --git a/src/shell/focus/order.rs b/src/shell/focus/order.rs
-index 81f23c62..3ec3b6c8 100644
+index 81f23c6..3ec3b6c 100644
 --- a/src/shell/focus/order.rs
 +++ b/src/shell/focus/order.rs
 @@ -1,7 +1,7 @@
@@ -149,7 +149,7 @@ index 81f23c62..3ec3b6c8 100644
          }
      }
 diff --git a/src/shell/layout/floating/mod.rs b/src/shell/layout/floating/mod.rs
-index 582ec1b4..fcb112ed 100644
+index 582ec1b..fcb112e 100644
 --- a/src/shell/layout/floating/mod.rs
 +++ b/src/shell/layout/floating/mod.rs
 @@ -8,7 +8,7 @@ use std::{
@@ -254,7 +254,7 @@ index 582ec1b4..fcb112ed 100644
          }
      }
 diff --git a/src/shell/layout/tiling/blocker.rs b/src/shell/layout/tiling/blocker.rs
-index ccf94738..28b9ec85 100644
+index ccf9473..28b9ec8 100644
 --- a/src/shell/layout/tiling/blocker.rs
 +++ b/src/shell/layout/tiling/blocker.rs
 @@ -37,7 +37,7 @@ impl TilingBlocker {
@@ -276,41 +276,22 @@ index ccf94738..28b9ec85 100644
                  .necessary_acks
                  .iter()
 diff --git a/src/shell/layout/tiling/grabs/resize.rs b/src/shell/layout/tiling/grabs/resize.rs
-index 51d5c9a2..b77e68dc 100644
+index 51d5c9a..213aac9 100644
 --- a/src/shell/layout/tiling/grabs/resize.rs
 +++ b/src/shell/layout/tiling/grabs/resize.rs
-@@ -221,7 +221,7 @@ impl ResizeForkGrab {
-         &mut self,
-         data: &mut State,
-         location: Point<f64, Logical>,
--        force: bool,
-+        _force: bool,
-     ) -> bool {
-         let delta = location - self.last_loc.as_logical();
-         self.last_loc = location.as_global();
-@@ -329,18 +329,8 @@ impl ResizeForkGrab {
-                     _ => unreachable!(),
-                 }
+@@ -232,6 +232,7 @@ impl ResizeForkGrab {
+                 return false;
+             };
+             let tiling_layer = &mut workspace.tiling_layer;
++            tiling_layer.fork_resize_active = !force;
+             let gaps = tiling_layer.gaps();
  
--                let should_configure = force
--                    || tree
--                        .traverse_pre_order(&self.node)
--                        .unwrap()
--                        .all(|node| match node.data() {
--                            Data::Mapped { mapped, .. } => mapped.latest_size_committed(),
--                            _ => true,
--                        });
--                if should_configure {
--                    let blocker = TilingLayout::update_positions(&output, &mut tree, gaps);
--                    tiling_layer.queue.push_tree(tree, None, blocker);
--                }
-+                let blocker = TilingLayout::update_positions(&output, &mut tree, gaps);
-+                tiling_layer.queue.push_tree(tree, None, blocker);
+             let mut tree = tiling_layer.queue.trees.back().unwrap().0.copy_clone();
              } else {
                  return true;
              }
 diff --git a/src/shell/layout/tiling/mod.rs b/src/shell/layout/tiling/mod.rs
-index 85efb2ce..b266c0f1 100644
+index 85efb2c..11283f4 100644
 --- a/src/shell/layout/tiling/mod.rs
 +++ b/src/shell/layout/tiling/mod.rs
 @@ -43,7 +43,7 @@ use cosmic_settings_config::shortcuts::action::{FocusDirection, ResizeDirection}
@@ -333,7 +314,23 @@ index 85efb2ce..b266c0f1 100644
  pub const MOUSE_ANIMATION_DELAY: Duration = Duration::from_millis(150);
  pub const INITIAL_MOUSE_ANIMATION_DELAY: Duration = Duration::from_millis(500);
  
-@@ -2608,17 +2608,8 @@ impl TilingLayout {
+@@ -136,6 +136,7 @@ pub struct TilingLayout {
+     last_overview_hover: Option<(Option<Instant>, TargetZone)>,
+     pub theme: cosmic::Theme,
+     pub appearance: AppearanceConfig,
++    pub fork_resize_active: bool,
+ }
+ 
+ #[derive(Debug, Clone, PartialEq)]
+@@ -367,6 +368,7 @@ impl TilingLayout {
+             last_overview_hover: None,
+             theme,
+             appearance,
++            fork_resize_active: false,
+         }
+     }
+ 
+@@ -2608,17 +2610,8 @@ impl TilingLayout {
                  _ => unreachable!(),
              }
  
@@ -353,7 +350,7 @@ index 85efb2ce..b266c0f1 100644
  
              return true;
          }
-@@ -4043,7 +4034,7 @@ impl TilingLayout {
+@@ -4043,7 +4036,7 @@ impl TilingLayout {
                  let percentage = since / total;
                  debug_assert!(!percentage.is_nan());
                  debug_assert!(!percentage.is_infinite());
@@ -362,7 +359,15 @@ index 85efb2ce..b266c0f1 100644
              }
          } else {
              1.0
-@@ -4196,7 +4187,7 @@ impl TilingLayout {
+@@ -4151,6 +4144,7 @@ impl TilingLayout {
+             &self.swapping_stack_surface_id,
+             &self.backdrop_id,
+             theme,
++            self.fork_resize_active,
+         ));
+ 
+         // tiling hints
+@@ -4196,7 +4190,7 @@ impl TilingLayout {
          let percentage = if let Some(animation_start) = self.queue.animation_start {
              let percentage = Instant::now().duration_since(animation_start).as_millis() as f32
                  / duration.as_millis() as f32;
@@ -371,7 +376,7 @@ index 85efb2ce..b266c0f1 100644
          } else {
              1.0
          };
-@@ -5156,7 +5147,7 @@ fn render_old_tree(
+@@ -5156,7 +5150,7 @@ fn render_old_tree(
                  if let Some(minimize_geo) = minimize_geo {
                      scaled_geo = Some(
                          ease(
@@ -380,7 +385,24 @@ index 85efb2ce..b266c0f1 100644
                              EaseRectangle(*original_geo),
                              EaseRectangle(*minimize_geo),
                              percentage,
-@@ -5837,7 +5828,7 @@ fn render_new_tree(
+@@ -5267,6 +5261,7 @@ fn render_new_tree_windows<R>(
+     swapping_stack_surface_id: &Id,
+     backdrop_id: &Id,
+     theme: &cosmic::theme::CosmicTheme,
++    fork_resize_active: bool,
+ ) -> Vec<CosmicMappedRenderElement<R>>
+ where
+     R: Renderer + ImportAll + ImportMem + AsGlowRenderer,
+@@ -5642,7 +5637,7 @@ where
+ 
+                 let (behavior, align) = if is_overview {
+                     (ConstrainScaleBehavior::Fit, ConstrainAlign::CENTER)
+-                } else if animating {
++                } else if animating || (fork_resize_active && elem_geometry.size != geo.as_logical().to_physical_precise_round(output_scale).size) {
+                     (ConstrainScaleBehavior::Stretch, ConstrainAlign::TOP_LEFT)
+                 } else {
+                     (ConstrainScaleBehavior::CutOff, ConstrainAlign::TOP_LEFT)
+@@ -5837,7 +5832,7 @@ fn render_new_tree(
                  (
                      if was_minimized {
                          ease(
@@ -389,7 +411,7 @@ index 85efb2ce..b266c0f1 100644
                              EaseRectangle(old_geo),
                              EaseRectangle(new_geo),
                              percentage,
-@@ -5856,7 +5847,34 @@ fn render_new_tree(
+@@ -5856,7 +5851,34 @@ fn render_new_tree(
                      old_geo != new_geo,
                  )
              } else {
@@ -426,7 +448,7 @@ index 85efb2ce..b266c0f1 100644
  
              if let Data::Mapped { mapped, .. } = data {
 diff --git a/src/shell/mod.rs b/src/shell/mod.rs
-index 6ba300d1..244406c1 100644
+index 6ba300d..244406c 100644
 --- a/src/shell/mod.rs
 +++ b/src/shell/mod.rs
 @@ -26,7 +26,7 @@ use cosmic_config::ConfigSet;
@@ -618,7 +640,7 @@ index 6ba300d1..244406c1 100644
              workspace.tiling_layer.recalculate();
          }
 diff --git a/src/shell/workspace.rs b/src/shell/workspace.rs
-index b03ac776..81502fd5 100644
+index b03ac77..81502fd 100644
 --- a/src/shell/workspace.rs
 +++ b/src/shell/workspace.rs
 @@ -30,7 +30,7 @@ use cosmic::theme::CosmicTheme;
@@ -744,7 +766,7 @@ index b03ac776..81502fd5 100644
                          + 0.6
                  }
 diff --git a/src/shell/zoom.rs b/src/shell/zoom.rs
-index fc018c48..df2a57f5 100644
+index fc018c4..df2a57f 100644
 --- a/src/shell/zoom.rs
 +++ b/src/shell/zoom.rs
 @@ -9,7 +9,7 @@ use cosmic::{
@@ -775,7 +797,7 @@ index fc018c48..df2a57f5 100644
              self.level
          }
 diff --git a/src/wayland/handlers/layer_shell.rs b/src/wayland/handlers/layer_shell.rs
-index 06be1db4..cd0954ca 100644
+index 06be1db..cd0954c 100644
 --- a/src/wayland/handlers/layer_shell.rs
 +++ b/src/wayland/handlers/layer_shell.rs
 @@ -73,6 +73,7 @@ impl WlrLayerShellHandler for State {

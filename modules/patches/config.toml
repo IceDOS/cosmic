@@ -1,0 +1,10 @@
+[icedos.desktop.cosmic.patches.cosmic-comp]
+betterAnimations = false
+fixTilingHintClipping = false
+perWindowKeyboardLayout = false
+
+[icedos.desktop.cosmic.patches.cosmic-osd]
+keyboardLayoutOsd = false
+
+[icedos.desktop.cosmic.patches.cosmic-panel.autohide]
+alwaysHide = false

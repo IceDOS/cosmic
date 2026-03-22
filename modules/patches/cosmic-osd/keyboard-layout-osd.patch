@@ -56,7 +56,7 @@ diff --git a/src/components/app.rs b/src/components/app.rs
 +                } else if let OsdTask::Touchpad = cmd {
                      return cosmic::task::future(async move {
                          use cosmic_config::{ConfigGet, ConfigSet};
- 
+
 diff --git a/src/components/osd_indicator.rs b/src/components/osd_indicator.rs
 --- a/src/components/osd_indicator.rs
 +++ b/src/components/osd_indicator.rs
@@ -66,7 +66,7 @@ diff --git a/src/components/osd_indicator.rs b/src/components/osd_indicator.rs
      TouchpadEnabled(TouchpadOverride),
 +    KeyboardLayout(String),
  }
- 
+
  impl Params {
 @@ -75,6 +76,7 @@
              }
@@ -75,7 +75,7 @@ diff --git a/src/components/osd_indicator.rs b/src/components/osd_indicator.rs
 +            Self::KeyboardLayout(_) => "input-keyboard-symbolic",
          }
      }
- 
+
 @@ -107,6 +109,7 @@
              Self::TouchpadEnabled(_) => None,
              Self::DisplayToggle(_) => None,
@@ -84,116 +84,22 @@ diff --git a/src/components/osd_indicator.rs b/src/components/osd_indicator.rs
          }
      }
  }
-@@ -114,7 +117,7 @@
- #[derive(Clone, Debug)]
- pub enum Msg {
-     Ignore,
--    Close,
-+    Close(u32),
- }
- 
- #[derive(Debug)]
-@@ -122,19 +125,20 @@
-     id: SurfaceId,
-     params: Params,
-     timer_abort: AbortHandle,
-+    generation: u32,
-     pub margin: (i32, i32, i32, i32),
-     amplification_sink: bool,
-     amplification_source: bool,
- }
- 
--fn close_timer() -> (Task<Msg>, AbortHandle) {
-+fn close_timer(gen_id: u32) -> (Task<Msg>, AbortHandle) {
-     let (future, timer_abort) = abortable(async {
-         let duration = Duration::from_secs(3);
-         tokio::time::sleep(duration).await;
-     });
-     let command = cosmic::task::future(async move {
-         match future.await {
--            Ok(_) => Msg::Close,
-+            Ok(_) => Msg::Close(gen_id),
-             Err(Aborted) => Msg::Ignore,
-         }
-     });
-@@ -143,14 +147,14 @@
-
- /// Creates a 1-second timer for display identifiers
- /// When the timer expires, it sends Msg::Close to remove the display identifier
--fn display_identifier_timer() -> (Task<Msg>, AbortHandle) {
-+fn display_identifier_timer(gen_id: u32) -> (Task<Msg>, AbortHandle) {
-     let (future, timer_abort) = abortable(async {
-         let duration = Duration::from_secs(1);
-         tokio::time::sleep(duration).await;
-     });
-     let command = cosmic::task::future(async move {
-         match future.await {
--            Ok(_) => Msg::Close,
-+            Ok(_) => Msg::Close(gen_id),
-             Err(Aborted) => Msg::Ignore,
-         }
-     });
-@@ -210,11 +214,11 @@
- 
-         // Display numbers auto-close after 1 second, other OSDs after 3 seconds
-         let timer_abort = if is_display_number {
--            let (cmd, timer_abort) = display_identifier_timer();
-+            let (cmd, timer_abort) = display_identifier_timer(0);
-             cmds.push(cmd);
-             timer_abort
-         } else {
--            let (cmd, timer_abort) = close_timer();
-+            let (cmd, timer_abort) = close_timer(0);
-             cmds.push(cmd);
-             timer_abort
-         };
-@@ -235,6 +239,7 @@
-                 id,
-                 params,
-                 timer_abort,
-+                generation: 0,
-                 margin,
-                 amplification_sink,
-                 amplification_source,
-@@ -251,9 +256,10 @@
-     // Resets close timer
-     pub fn replace_params(&mut self, params: Params) -> Task<Msg> {
-         self.params = params;
-+        self.generation += 1;
-         // Reset timer
-         self.timer_abort.abort();
--        let (cmd, timer_abort) = close_timer();
-+        let (cmd, timer_abort) = close_timer(self.generation);
-         self.timer_abort = timer_abort;
-         cmd
-     }
-@@ -265,8 +271,9 @@
-             return Task::none();
-         }
- 
-+        self.generation += 1;
-         self.timer_abort.abort();
--        let (cmd, timer_abort) = display_identifier_timer();
-+        let (cmd, timer_abort) = display_identifier_timer(self.generation);
-         self.timer_abort = timer_abort;
-         cmd
-     }
-@@ -297,6 +304,11 @@
+@@ -297,6 +300,11 @@
              return self.view_display_number(display_number);
          }
- 
+
 +        // Keyboard layout uses custom rendering with icon + text
 +        if let Params::KeyboardLayout(ref name) = self.params {
 +            return self.view_keyboard_layout(name);
 +        }
 +
          let icon = widget::icon::from_name(self.params.icon_name());
- 
+
          // Use large radius on value-OSD to enforce pill-shape with "Round" system style
-@@ -390,6 +402,73 @@
+@@ -390,6 +398,73 @@
          .into()
      }
- 
+
 +    fn view_keyboard_layout(&self, name: &str) -> Element<'_, Msg> {
 +        let icon = widget::icon::from_name("input-keyboard-symbolic").size(32);
 +        let label = widget::text::title4(name.to_string())
@@ -264,13 +170,3 @@ diff --git a/src/components/osd_indicator.rs b/src/components/osd_indicator.rs
      fn view_display_number(&self, display_number: u32) -> Element<'_, Msg> {
          const CONTAINER_BASE_SIZE: u16 = 27;
          const TEXT_SIZE: u16 = 45;
-@@ -446,7 +525,8 @@
-         log::trace!("indicator msg: {:?}", msg);
-         match msg {
-             Msg::Ignore => (Some(self), Task::none()),
--            Msg::Close => (None, destroy_layer_surface(self.id)),
-+            Msg::Close(gen_id) if gen_id == self.generation => (None, destroy_layer_surface(self.id)),
-+            Msg::Close(_) => (Some(self), Task::none()),
-         }
-     }
- }
