@@ -258,6 +258,24 @@
           ) users;
         }
       )
+
+      # Fix active window hint border clipped at screen edges in tiling mode
+      (
+        { ... }:
+        {
+          nixpkgs.overlays = [
+            (final: prev: {
+              cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
+                patches = (old.patches or [ ]) ++ [
+                  ./patches/fix-tiling-hint-clipping.patch
+                ];
+
+                doCheck = false;
+              });
+            })
+          ];
+        }
+      )
     ];
 
   meta.name = "appearance";

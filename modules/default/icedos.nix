@@ -120,7 +120,7 @@
             (final: prev: {
               cosmic-comp = prev.cosmic-comp.overrideAttrs (old: {
                 patches = (old.patches or [ ]) ++ [
-                  ./alternate-animations.patch
+                  ./patches/alternate-animations.patch
                 ];
 
                 doCheck = false;
