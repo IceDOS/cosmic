@@ -1,0 +1,39 @@
+diff --git a/src/wayland/handlers/output_power.rs b/src/wayland/handlers/output_power.rs
+index 2675009..e95389f 100644
+--- a/src/wayland/handlers/output_power.rs
++++ b/src/wayland/handlers/output_power.rs
+@@ -25,6 +25,20 @@ pub fn set_all_surfaces_dpms_on(state: &mut State) {
+     }
+ }
+
++pub fn set_all_surfaces_dpms_off(state: &mut State) {
++    let mut changed = false;
++    for surface in kms_surfaces(state) {
++        if surface.get_dpms() {
++            surface.set_dpms(false);
++            changed = true;
++        }
++    }
++
++    if changed {
++        OutputPowerState::refresh(state);
++    }
++}
++
+ fn kms_surfaces(state: &mut State) -> impl Iterator<Item = &mut Surface> {
+     if let BackendData::Kms(kms_state) = &mut state.backend {
+         Some(
+diff --git a/src/wayland/handlers/session_lock.rs b/src/wayland/handlers/session_lock.rs
+index a831e5f..834a2eb 100644
+--- a/src/wayland/handlers/session_lock.rs
++++ b/src/wayland/handlers/session_lock.rs
+@@ -42,6 +42,9 @@ impl SessionLockHandler for State {
+         for output in shell.outputs() {
+             self.backend.schedule_render(output);
+         }
++
++        drop(shell);
++        crate::wayland::handlers::output_power::set_all_surfaces_dpms_off(self);
+     }
+
+     fn unlock(&mut self) {

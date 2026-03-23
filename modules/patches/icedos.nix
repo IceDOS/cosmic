@@ -12,13 +12,13 @@
         cosmic-panel
         ;
 
-      inherit (cosmic-comp) betterAnimations fixTilingHintClipping perWindowKeyboardLayout;
+      inherit (cosmic-comp) disableMonitorsOnLock fixTilingHintClipping perWindowKeyboardLayout;
       inherit (cosmic-osd) keyboardLayoutOsd;
       inherit (cosmic-panel.autohide) alwaysHide;
     in
     {
       cosmic-comp = {
-        betterAnimations = mkBoolOption { default = betterAnimations; };
+        disableMonitorsOnLock = mkBoolOption { default = disableMonitorsOnLock; };
         fixTilingHintClipping = mkBoolOption { default = fixTilingHintClipping; };
         perWindowKeyboardLayout = mkBoolOption { default = perWindowKeyboardLayout; };
       };
@@ -34,13 +34,13 @@
         { config, lib, ... }:
         let
           inherit (config.icedos.desktop.cosmic.patches) cosmic-comp cosmic-osd cosmic-panel;
-          inherit (cosmic-comp) betterAnimations fixTilingHintClipping perWindowKeyboardLayout;
+          inherit (cosmic-comp) disableMonitorsOnLock fixTilingHintClipping perWindowKeyboardLayout;
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
           inherit (lib) optional;
 
           doCheck = false;
-          hasCosmicCompPatch = betterAnimations || fixTilingHintClipping || perWindowKeyboardLayout;
+          hasCosmicCompPatch = disableMonitorsOnLock || fixTilingHintClipping || perWindowKeyboardLayout;
         in
         {
           nixpkgs.overlays =
@@ -53,7 +53,7 @@
 
                     patches =
                       (old.patches or [ ])
-                      ++ optional betterAnimations ./cosmic-comp/better-animations.patch
+                      ++ optional disableMonitorsOnLock ./cosmic-comp/disable-monitors-on-lock.patch
                       ++ optional fixTilingHintClipping ./cosmic-comp/fix-tiling-hint-clipping.patch
                       ++ optional perWindowKeyboardLayout ./cosmic-comp/per-window-keyboard-layout.patch;
                   });

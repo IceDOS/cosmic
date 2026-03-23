@@ -1,5 +1,5 @@
 [icedos.desktop.cosmic.patches.cosmic-comp]
-betterAnimations = false
+disableMonitorsOnLock = false
 fixTilingHintClipping = false
 perWindowKeyboardLayout = false
 
