@@ -1,6 +1,6 @@
 [icedos.desktop.cosmic.time]
 date = false
-firstDayOfTheWeek = "monday" # friday, saturday, sunday, monday
+firstDayOfTheWeek = "monday" # monday, tuesday, wednesday, thursday, friday, saturday, sunday
 hourFormat24 = true
 seconds = true
 weekday = false

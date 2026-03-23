@@ -1,4 +1,4 @@
 [icedos.desktop.cosmic.x11]
-globalShortcuts = "None" # None (No Keys allowed), Modifiers (Modifiers allowed), Combinations (All keys while wodifiers are pressed), All
+globalShortcuts = "None" # None (No Keys allowed), Modifiers (Modifiers allowed), Combinations (All keys while modifiers are pressed), All
 mouseEvents = false
 scaling = "fractional" # "fractional", true, false

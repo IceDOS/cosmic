@@ -66,7 +66,7 @@
                             "Vertical"
                           ])
                         )
-                        ''cosmic workspaces orientation has to one of Horizontal, Vertical - "${orientation}" is invalid!''
+                        ''cosmic workspaces orientation has to be one of Horizontal, Vertical - "${orientation}" is invalid!''
                       )
                     then
                       orientation

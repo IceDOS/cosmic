@@ -187,7 +187,7 @@
                               "BootOn"
                               "LastBoot"
                             ])
-                          ) ''cosmic numlock state has to one of BootOff, BootOn, LastBoot - "${numlock}" is invalid!'')
+                          ) ''cosmic numlock state has to be one of BootOff, BootOn, LastBoot - "${numlock}" is invalid!'')
                         then
                           numlock
                         else
@@ -226,7 +226,7 @@
                                                         "rwin"
                                                       ])
                                                     )
-                                                    ''cosmic alternate characters key has to one of lalt, ralt, lwin, rwin, menu, caps or "" - "${alternateCharactersKey}" is invalid!''
+                                                    ''cosmic alternate characters key has to be one of lalt, ralt, lwin, rwin, menu, caps or "" - "${alternateCharactersKey}" is invalid!''
                                                   )
                                                 then
                                                   ",lv3:${alternateCharactersKey}_switch"
@@ -246,7 +246,7 @@
                                                         "swapescape"
                                                       ])
                                                     )
-                                                    ''cosmic caps lock key has to one of escape, swapescape, backspace, super, ctrl_modifier or "" - "${capsLockKey}" is invalid!''
+                                                    ''cosmic caps lock key has to be one of escape, swapescape, backspace, super, ctrl_modifier or "" - "${capsLockKey}" is invalid!''
                                                   )
                                                 then
                                                   ",caps:${capsLockKey}"
@@ -269,7 +269,7 @@
                                                         "sclk"
                                                       ])
                                                     )
-                                                    ''cosmic compose key has to one of ralt, lwin, rwin, menu, rctrl, caps, sclk, prsc or "" - "${composeKey}" is invalid!''
+                                                    ''cosmic compose key has to be one of ralt, lwin, rwin, menu, rctrl, caps, sclk, prsc or "" - "${composeKey}" is invalid!''
                                                   )
                                                 then
                                                   ",compose:${composeKey}"
@@ -295,7 +295,7 @@
                                 "WorkspaceOverview"
                               ])
                             )
-                            ''cosmic super key action has to one of Launcher, WorkspaceOverview, AppLibrary, Disable - "${superKeyAction}" is invalid!''
+                            ''cosmic super key action has to be one of Launcher, WorkspaceOverview, AppLibrary, Disable - "${superKeyAction}" is invalid!''
                           )
                         then
                           {

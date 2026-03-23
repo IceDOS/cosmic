@@ -69,7 +69,7 @@
                             "Centered"
                           ])
                         )
-                        ''cosmic move zoom view attribute has to one of Continuously, OnEdge, Centered - "${moveZoom}" is invalid!''
+                        ''cosmic move zoom view attribute has to be one of Continuously, OnEdge, Centered - "${moveZoom}" is invalid!''
                       )
                     then
                       mkRON "enum" moveZoom
