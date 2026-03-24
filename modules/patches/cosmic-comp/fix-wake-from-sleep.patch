@@ -1,0 +1,15 @@
+diff --git a/src/input/mod.rs b/src/input/mod.rs
+index c57eeca4..9e5072ec 100644
+--- a/src/input/mod.rs
++++ b/src/input/mod.rs
+@@ -165,6 +165,10 @@ impl State {
+         <B as InputBackend>::Device: 'static,
+     {
+         crate::wayland::handlers::output_power::set_all_surfaces_dpms_on(self);
++        {
++            let seat = self.common.shell.read().seats.last_active().clone();
++            self.common.idle_notifier_state.notify_activity(&seat);
++        }
+
+         use smithay::backend::input::Event;
+         match event {

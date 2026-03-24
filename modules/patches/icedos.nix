@@ -12,7 +12,7 @@
         cosmic-panel
         ;
 
-      inherit (cosmic-comp) disableMonitorsOnLock fixTilingHintClipping perWindowKeyboardLayout;
+      inherit (cosmic-comp) disableMonitorsOnLock fixTilingHintClipping fixWakeFromSleep perWindowKeyboardLayout;
       inherit (cosmic-osd) keyboardLayoutOsd;
       inherit (cosmic-panel.autohide) alwaysHide;
     in
@@ -20,6 +20,7 @@
       cosmic-comp = {
         disableMonitorsOnLock = mkBoolOption { default = disableMonitorsOnLock; };
         fixTilingHintClipping = mkBoolOption { default = fixTilingHintClipping; };
+        fixWakeFromSleep = mkBoolOption { default = fixWakeFromSleep; };
         perWindowKeyboardLayout = mkBoolOption { default = perWindowKeyboardLayout; };
       };
 
@@ -34,13 +35,13 @@
         { config, lib, ... }:
         let
           inherit (config.icedos.desktop.cosmic.patches) cosmic-comp cosmic-osd cosmic-panel;
-          inherit (cosmic-comp) disableMonitorsOnLock fixTilingHintClipping perWindowKeyboardLayout;
+          inherit (cosmic-comp) disableMonitorsOnLock fixTilingHintClipping fixWakeFromSleep perWindowKeyboardLayout;
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
           inherit (lib) optional;
 
           doCheck = false;
-          hasCosmicCompPatch = disableMonitorsOnLock || fixTilingHintClipping || perWindowKeyboardLayout;
+          hasCosmicCompPatch = disableMonitorsOnLock || fixTilingHintClipping || fixWakeFromSleep || perWindowKeyboardLayout;
         in
         {
           nixpkgs.overlays =
@@ -55,6 +56,7 @@
                       (old.patches or [ ])
                       ++ optional disableMonitorsOnLock ./cosmic-comp/disable-monitors-on-lock.patch
                       ++ optional fixTilingHintClipping ./cosmic-comp/fix-tiling-hint-clipping.patch
+                      ++ optional fixWakeFromSleep ./cosmic-comp/fix-wake-from-sleep.patch
                       ++ optional perWindowKeyboardLayout ./cosmic-comp/per-window-keyboard-layout.patch;
                   });
                 }
