@@ -50,12 +50,12 @@
             home.file = {
               ".config/cosmic/com.system76.CosmicAudio/v1/amplification_source" = {
                 inherit force;
-                text = if outputAmplification then "true" else "false";
+                text = if inputAmplification then "true" else "false";
               };
 
               ".config/cosmic/com.system76.CosmicAudio/v1/amplification_sink" = {
                 inherit force;
-                text = if inputAmplification then "true" else "false";
+                text = if outputAmplification then "true" else "false";
               };
             };
 

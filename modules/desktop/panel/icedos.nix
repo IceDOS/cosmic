@@ -11,16 +11,9 @@
         mkSubmoduleAttrsOption
         ;
 
-      inherit
-        (
-          let
-            inherit (lib) readFile;
-          in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic
-        )
-        panel
-        users
-        ;
+      inherit (lib) readFile;
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop) cosmic;
+      inherit (cosmic) panel;
 
       inherit (panel)
         autohide
@@ -56,7 +49,7 @@
       };
 
       users = mkSubmoduleAttrsOption { default = { }; } {
-        panelFavorites = mkStrListOption { default = users.username.panelFavorites; };
+        panelFavorites = mkStrListOption { default = cosmic.users.username.panelFavorites; };
       };
     };
 

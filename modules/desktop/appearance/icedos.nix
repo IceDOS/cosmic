@@ -66,7 +66,7 @@
                 ;
 
               generateColor =
-                color: string:
+                color:
                 let
                   inherit (pkgs) bc runCommand;
                   bcBin = "${bc}/bin/bc";
@@ -127,7 +127,7 @@
                   alpha ? -1,
                 }:
                 let
-                  rgb = fromJSON (generateColor color "");
+                  rgb = fromJSON (generateColor color);
                   red = elemAt rgb 0;
                   green = elemAt rgb 1;
                   blue = elemAt rgb 2;

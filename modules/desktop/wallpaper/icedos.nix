@@ -10,13 +10,9 @@
         mkSubmoduleListOption
         ;
 
-      inherit
-        (
-          let
-            inherit (lib) readFile;
-          in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.wallpaper
-        )
+      inherit (lib) head readFile;
+
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.wallpaper)
         fit
         seconds
         wallpaper
@@ -25,12 +21,18 @@
     {
       fit = mkBoolOption { default = fit; };
 
-      monitors = mkSubmoduleListOption { default = [ ]; } {
-        name = mkStrOption { default = ""; };
-        fit = mkBoolOption { default = fit; };
-        seconds = mkNumberOption { default = seconds; };
-        wallpaper = mkStrOption { default = wallpaper; };
-      };
+      monitors =
+        let
+          inherit (head (fromTOML (readFile ./monitors.toml)).icedos.desktop.cosmic.wallpaper.monitors)
+            name
+            ;
+        in
+        mkSubmoduleListOption { default = [ ]; } {
+          name = mkStrOption { default = name; };
+          fit = mkBoolOption { default = fit; };
+          seconds = mkNumberOption { default = seconds; };
+          wallpaper = mkStrOption { default = wallpaper; };
+        };
 
       seconds = mkNumberOption { default = seconds; };
       wallpaper = mkStrOption { default = wallpaper; };
@@ -74,7 +76,7 @@
                 last
                 length
                 listToAttrs
-                splitString
+                mkIf
                 strings
                 toUpper
                 ;
@@ -185,7 +187,7 @@
               perScreen = length monitors > 0;
             in
             {
-              wayland.desktopManager.cosmic.wallpapers = [
+              wayland.desktopManager.cosmic.wallpapers = mkIf (wallpaper != "" && (length monitors) > 0) [
                 (
                   if (!perScreen) then
                     generateWallpaperConfig "all"

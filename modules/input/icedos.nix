@@ -11,7 +11,7 @@
         mkSubmoduleListOption
         ;
 
-      inherit (lib) readFile;
+      inherit (lib) head readFile;
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.input) keyboard mouse;
 
       inherit (keyboard)
@@ -43,13 +43,23 @@
         repeatDelay = mkNumberOption { default = repeatDelay; };
         repeatRate = mkNumberOption { default = repeatRate; };
 
-        shortcuts = mkSubmoduleListOption { default = [ ]; } {
-          action = mkStrOption { default = ""; };
-          command = mkStrOption { default = ""; };
-          description = mkStrOption { default = ""; };
-          keys = mkStrListOption { default = [ ]; };
-          variant = mkStrOption { default = ""; };
-        };
+        shortcuts =
+          let
+            inherit (head (fromTOML (readFile ./shortcuts.toml)).icedos.desktop.cosmic.input.keyboard.shortcuts)
+              action
+              command
+              description
+              keys
+              variant
+              ;
+          in
+          mkSubmoduleListOption { default = [ ]; } {
+            action = mkStrOption { default = action; };
+            command = mkStrOption { default = command; };
+            description = mkStrOption { default = description; };
+            keys = mkStrListOption { default = keys; };
+            variant = mkStrOption { default = variant; };
+          };
 
         superKeyAction = mkStrOption { default = superKeyAction; };
       };
