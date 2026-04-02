@@ -13,10 +13,16 @@
         xdg-desktop-portal-cosmic
         ;
 
-      inherit (cosmic-comp) disableMonitorsOnLock fixTilingHintClipping fixWakeFromSleep perWindowKeyboardLayout;
+      inherit (cosmic-comp)
+        disableMonitorsOnLock
+        fixTilingHintClipping
+        fixWakeFromSleep
+        perWindowKeyboardLayout
+        ;
+
       inherit (cosmic-osd) keyboardLayoutOsd;
       inherit (cosmic-panel.autohide) alwaysHide;
-      inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName;
+      inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName useGtkFilePicker;
     in
     {
       cosmic-comp = {
@@ -28,7 +34,10 @@
 
       cosmic-osd.keyboardLayoutOsd = mkBoolOption { default = keyboardLayoutOsd; };
       cosmic-panel.autohide.alwaysHide = mkBoolOption { default = alwaysHide; };
-      xdg-desktop-portal-cosmic.filePickerDefaultSortName = mkBoolOption { default = filePickerDefaultSortName; };
+      xdg-desktop-portal-cosmic = {
+        filePickerDefaultSortName = mkBoolOption { default = filePickerDefaultSortName; };
+        useGtkFilePicker = mkBoolOption { default = useGtkFilePicker; };
+      };
     };
 
   outputs.nixosModules =
@@ -37,17 +46,34 @@
       (
         { config, lib, ... }:
         let
-          inherit (config.icedos.desktop.cosmic.patches) cosmic-comp cosmic-osd cosmic-panel xdg-desktop-portal-cosmic;
-          inherit (cosmic-comp) disableMonitorsOnLock fixTilingHintClipping fixWakeFromSleep perWindowKeyboardLayout;
+          inherit (config.icedos.desktop.cosmic.patches)
+            cosmic-comp
+            cosmic-osd
+            cosmic-panel
+            xdg-desktop-portal-cosmic
+            ;
+
+          inherit (cosmic-comp)
+            disableMonitorsOnLock
+            fixTilingHintClipping
+            fixWakeFromSleep
+            perWindowKeyboardLayout
+            ;
+
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
-          inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName;
-          inherit (lib) optional;
+          inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName useGtkFilePicker;
+          inherit (lib) mkIf optional;
 
           doCheck = false;
-          hasCosmicCompPatch = disableMonitorsOnLock || fixTilingHintClipping || fixWakeFromSleep || perWindowKeyboardLayout;
+          hasCosmicCompPatch =
+            disableMonitorsOnLock || fixTilingHintClipping || fixWakeFromSleep || perWindowKeyboardLayout;
         in
         {
+          xdg.portal.config.common = mkIf useGtkFilePicker {
+            "org.freedesktop.impl.portal.FileChooser" = "gtk";
+          };
+
           nixpkgs.overlays =
             [ ]
             ++ (
