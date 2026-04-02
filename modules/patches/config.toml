@@ -9,3 +9,6 @@ keyboardLayoutOsd = false
 
 [icedos.desktop.cosmic.patches.cosmic-panel.autohide]
 alwaysHide = false
+
+[icedos.desktop.cosmic.patches.xdg-desktop-portal-cosmic]
+filePickerDefaultSortName = false
