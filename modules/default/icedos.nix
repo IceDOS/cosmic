@@ -81,6 +81,17 @@
             enable = true;
             showExcludedPkgsWarning = (!disableExcludedPackagesWarning);
           };
+
+          # Restore the polkit SUID helper removed in nixpkgs#473068 (polkit 126→127).
+          # cosmic-osd's authentication agent still forks the SUID binary and does not
+          # support the new socket-activated IPC service yet (pop-os/cosmic-osd#169).
+          # Remove this once cosmic-osd gains socket support.
+          security.wrappers.polkit-agent-helper-1 = {
+            setuid = true;
+            owner = "root";
+            group = "root";
+            source = "${pkgs.polkit.out}/lib/polkit-1/polkit-agent-helper-1";
+          };
         }
       )
 
