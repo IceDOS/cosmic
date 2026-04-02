@@ -2,7 +2,31 @@ diff --git a/src/wayland/handlers/output_power.rs b/src/wayland/handlers/output_
 index 2675009..e95389f 100644
 --- a/src/wayland/handlers/output_power.rs
 +++ b/src/wayland/handlers/output_power.rs
-@@ -25,6 +25,20 @@ pub fn set_all_surfaces_dpms_on(state: &mut State) {
+@@ -1,5 +1,7 @@
+ // SPDX-License-Identifier: GPL-3.0-only
+
++use std::sync::atomic::{AtomicBool, Ordering};
++
+ use smithay::output::Output;
+
+ use crate::{
+@@ -11,7 +13,15 @@ use crate::{
+     },
+ };
+
++pub static DPMS_LOCK_GRACE: AtomicBool = AtomicBool::new(false);
++
+ pub fn set_all_surfaces_dpms_on(state: &mut State) {
++    // During the grace period after session lock, ignore DPMS-on requests
++    // so that key release events from the lock shortcut don't immediately
++    // turn monitors back on.
++    if DPMS_LOCK_GRACE.load(Ordering::Relaxed) {
++        return;
++    }
+     let mut changed = false;
+     for surface in kms_surfaces(state) {
+         if !surface.get_dpms() {
+@@ -25,6 +35,20 @@ pub fn set_all_surfaces_dpms_on(state: &mut State) {
      }
  }
 
@@ -27,13 +51,22 @@ diff --git a/src/wayland/handlers/session_lock.rs b/src/wayland/handlers/session
 index a831e5f..834a2eb 100644
 --- a/src/wayland/handlers/session_lock.rs
 +++ b/src/wayland/handlers/session_lock.rs
-@@ -42,6 +42,9 @@ impl SessionLockHandler for State {
+@@ -42,6 +42,18 @@ impl SessionLockHandler for State {
          for output in shell.outputs() {
              self.backend.schedule_render(output);
          }
 +
 +        drop(shell);
++        crate::wayland::handlers::output_power::DPMS_LOCK_GRACE
++            .store(true, std::sync::atomic::Ordering::Relaxed);
 +        crate::wayland::handlers::output_power::set_all_surfaces_dpms_off(self);
++        let timer = calloop::timer::Timer::from_duration(std::time::Duration::from_millis(500));
++        let _ = self.common.event_loop_handle.insert_source(timer, |_, _, state| {
++            crate::wayland::handlers::output_power::DPMS_LOCK_GRACE
++                .store(false, std::sync::atomic::Ordering::Relaxed);
++            crate::wayland::handlers::output_power::set_all_surfaces_dpms_off(state);
++            calloop::timer::TimeoutAction::Drop
++        });
      }
 
      fn unlock(&mut self) {
