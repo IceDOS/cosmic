@@ -1,3 +1,6 @@
+[icedos.desktop.cosmic.patches.cosmic-applets]
+steamGameIconMatcher = false
+
 [icedos.desktop.cosmic.patches.cosmic-comp]
 disableMonitorsOnLock = false
 fixTilingHintClipping = false

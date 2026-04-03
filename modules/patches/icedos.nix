@@ -7,19 +7,20 @@
       inherit (lib) readFile;
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.patches)
+        cosmic-applets
         cosmic-comp
         cosmic-osd
         cosmic-panel
         xdg-desktop-portal-cosmic
         ;
 
+      inherit (cosmic-applets) steamGameIconMatcher;
       inherit (cosmic-comp)
         disableMonitorsOnLock
         fixTilingHintClipping
         fixWakeFromSleep
         perWindowKeyboardLayout
         ;
-
       inherit (cosmic-osd) keyboardLayoutOsd;
       inherit (cosmic-panel.autohide) alwaysHide;
       inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName useGtkFilePicker;
@@ -32,8 +33,10 @@
         perWindowKeyboardLayout = mkBoolOption { default = perWindowKeyboardLayout; };
       };
 
+      cosmic-applets.steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
       cosmic-osd.keyboardLayoutOsd = mkBoolOption { default = keyboardLayoutOsd; };
       cosmic-panel.autohide.alwaysHide = mkBoolOption { default = alwaysHide; };
+
       xdg-desktop-portal-cosmic = {
         filePickerDefaultSortName = mkBoolOption { default = filePickerDefaultSortName; };
         useGtkFilePicker = mkBoolOption { default = useGtkFilePicker; };
@@ -47,11 +50,14 @@
         { config, lib, ... }:
         let
           inherit (config.icedos.desktop.cosmic.patches)
+            cosmic-applets
             cosmic-comp
             cosmic-osd
             cosmic-panel
             xdg-desktop-portal-cosmic
             ;
+
+          inherit (cosmic-applets) steamGameIconMatcher;
 
           inherit (cosmic-comp)
             disableMonitorsOnLock
@@ -88,6 +94,17 @@
                       ++ optional fixTilingHintClipping ./cosmic-comp/fix-tiling-hint-clipping.patch
                       ++ optional fixWakeFromSleep ./cosmic-comp/fix-wake-from-sleep.patch
                       ++ optional perWindowKeyboardLayout ./cosmic-comp/per-window-keyboard-layout.patch;
+                  });
+                }
+              )
+              ++ optional steamGameIconMatcher (
+                final: prev: {
+                  cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
+                    inherit doCheck;
+
+                    patches = (old.patches or [ ]) ++ [
+                      ./cosmic-applets/steam-game-icon-matcher.patch
+                    ];
                   });
                 }
               )
