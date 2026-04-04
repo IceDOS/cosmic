@@ -7,6 +7,9 @@ fixTilingHintClipping = false
 fixWakeFromSleep = false
 perWindowKeyboardLayout = false
 
+[icedos.desktop.cosmic.patches.cosmic-notifications]
+windowMatchingRoundness = false
+
 [icedos.desktop.cosmic.patches.cosmic-osd]
 keyboardLayoutOsd = false
 

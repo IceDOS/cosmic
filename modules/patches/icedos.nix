@@ -9,6 +9,7 @@
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.patches)
         cosmic-applets
         cosmic-comp
+        cosmic-notifications
         cosmic-osd
         cosmic-panel
         xdg-desktop-portal-cosmic
@@ -21,6 +22,7 @@
         fixWakeFromSleep
         perWindowKeyboardLayout
         ;
+      inherit (cosmic-notifications) windowMatchingRoundness;
       inherit (cosmic-osd) keyboardLayoutOsd;
       inherit (cosmic-panel.autohide) alwaysHide;
       inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName useGtkFilePicker;
@@ -34,6 +36,7 @@
       };
 
       cosmic-applets.steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
+      cosmic-notifications.windowMatchingRoundness = mkBoolOption { default = windowMatchingRoundness; };
       cosmic-osd.keyboardLayoutOsd = mkBoolOption { default = keyboardLayoutOsd; };
       cosmic-panel.autohide.alwaysHide = mkBoolOption { default = alwaysHide; };
 
@@ -52,6 +55,7 @@
           inherit (config.icedos.desktop.cosmic.patches)
             cosmic-applets
             cosmic-comp
+            cosmic-notifications
             cosmic-osd
             cosmic-panel
             xdg-desktop-portal-cosmic
@@ -66,6 +70,7 @@
             perWindowKeyboardLayout
             ;
 
+          inherit (cosmic-notifications) windowMatchingRoundness;
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
           inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName useGtkFilePicker;
@@ -125,6 +130,21 @@
                     patches = (old.patches or [ ]) ++ [
                       ./cosmic-settings-daemon/keyboard-layout-osd.patch
                     ];
+                  });
+                }
+              )
+              ++ optional windowMatchingRoundness (
+                final: prev: {
+                  cosmic-notifications = prev.cosmic-notifications.overrideAttrs (oldAttrs: {
+                    postPatch = (oldAttrs.postPatch or "") + ''
+                      iced_rs="$cargoDepsCopy"/source-git-*/libcosmic-*/src/theme/style/iced.rs
+                      substituteInPlace $iced_rs \
+                        --replace-fail \
+                        'Button::Card => corner_radii.radius_xs.into(),' \
+                        'Button::Card => corner_radii.radius_s.into(),'
+                    '';
+
+                    doCheck = false;
                   });
                 }
               )
