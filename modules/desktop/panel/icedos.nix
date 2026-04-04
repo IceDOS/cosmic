@@ -64,7 +64,7 @@
         }:
         let
           inherit (config.icedos) desktop users;
-          inherit (lib) mapAttrs;
+          inherit (lib) mapAttrs mkIf length;
           inherit (desktop) cosmic;
           inherit (cosmic) panel;
 
@@ -81,14 +81,6 @@
             ;
 
           inherit (plugins) center left right;
-
-          inherit (lib)
-            concatMapStringsSep
-            mkIf
-            length
-            ;
-
-          force = true;
         in
         {
           home-manager.users = mapAttrs (
@@ -96,143 +88,74 @@
             let
               inherit (cosmic) users;
               inherit (users.${user}) panelFavorites;
+              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
             in
             {
-              home.file = {
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/anchor" = {
-                  inherit force;
-                  text = position;
-                };
+              wayland.desktopManager.cosmic.panels = [
+                {
+                  name = "Panel";
+                  anchor = mkRON "enum" position;
+                  anchor_gap = gaps;
 
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/anchor_gap" = {
-                  inherit force;
-                  text = if gaps then "true" else "false";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/autohide" = {
-                  inherit force;
-
-                  text =
+                  autohide =
                     if autohide then
-                      ''
-                        Some((
-                            wait_time: 1000,
-                            transition_time: 200,
-                            handle_size: 4,
-                            unhide_delay: 200,
-                        ))
-                      ''
+                      mkRON "optional" {
+                        wait_time = 1000;
+                        transition_time = 200;
+                        handle_size = 4;
+                        unhide_delay = 200;
+                      }
                     else
-                      "None";
-                };
+                      {
+                        __type = "optional";
+                        value = null;
+                      };
 
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/background" = {
-                  inherit force;
-                  text = themeMode;
-                };
+                  background = mkRON "enum" themeMode;
+                  exclusive_zone = !autohide;
+                  expand_to_edges = expand;
+                  keyboard_interactivity = mkRON "enum" "OnDemand";
+                  layer = mkRON "enum" "Top";
+                  margin = 0;
+                  opacity = opacity / 100.0;
 
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/exclusive_zone" = {
-                  inherit force;
-                  text = if autohide then "false" else "true";
-                };
+                  output =
+                    if (monitor == "") then
+                      mkRON "enum" "All"
+                    else
+                      {
+                        __type = "enum";
+                        variant = "Name";
+                        value = [ monitor ];
+                      };
 
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/expand_to_edges" = {
-                  inherit force;
-                  text = if expand then "true" else "false";
-                };
+                  padding = 0;
 
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/plugins_center" = {
-                  inherit force;
+                  plugins_center = mkRON "optional" center;
 
-                  text = ''
-                    Some([
-                        ${(concatMapStringsSep "" (plugin: ''"${plugin}",'') center)}
-                    ])
-                  '';
-                };
+                  plugins_wings = mkRON "optional" (mkRON "tuple" [
+                    left
+                    right
+                  ]);
 
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/plugins_wings" = {
-                  inherit force;
+                  size = mkRON "enum" size;
+                  spacing = 0;
+                  border_radius = 0;
 
-                  text = ''
-                    Some(([
-                        ${(concatMapStringsSep "" (plugin: ''"${plugin}",'') left)}
-                    ], [
-                        ${(concatMapStringsSep "" (plugin: ''"${plugin}",'') right)}
-                    ]))
-                  '';
-                };
+                  size_wings = {
+                    __type = "optional";
+                    value = null;
+                  };
 
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/opacity" = {
-                  inherit force;
-                  text = "${toString (opacity / 100)}.0";
-                };
+                  size_center = {
+                    __type = "optional";
+                    value = null;
+                  };
 
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/output" = {
-                  inherit force;
-                  text = if (monitor == "") then "All" else ''Name("${monitor}")'';
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/size" = {
-                  inherit force;
-                  text = size;
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/name" = {
-                  inherit force;
-                  text = ''"Panel"'';
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/layer" = {
-                  inherit force;
-                  text = "Top";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/keyboard_interactivity" = {
-                  inherit force;
-                  text = "OnDemand";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/padding" = {
-                  inherit force;
-                  text = "0";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/spacing" = {
-                  inherit force;
-                  text = "0";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/border_radius" = {
-                  inherit force;
-                  text = "0";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/margin" = {
-                  inherit force;
-                  text = "0";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/size_wings" = {
-                  inherit force;
-                  text = "None";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/size_center" = {
-                  inherit force;
-                  text = "None";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/autohover_delay_ms" = {
-                  inherit force;
-                  text = "Some(500)";
-                };
-
-                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/padding_overlap" = {
-                  inherit force;
-                  text = "0.5";
-                };
-              };
+                  autohover_delay_ms = mkRON "optional" 500;
+                  padding_overlap = 0.5;
+                }
+              ];
 
               wayland.desktopManager.cosmic.applets.app-list.settings.favorites = mkIf (
                 (length panelFavorites) > 0

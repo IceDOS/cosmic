@@ -78,91 +78,82 @@
 
           inherit (plugins) center left right;
 
-          inherit (lib) concatMapStringsSep mapAttrs;
-          force = true;
+          inherit (lib) mapAttrs mkIf;
         in
         {
-          home-manager.users = mapAttrs (user: _: {
-            home.file = {
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/anchor" = {
-                inherit force;
-                text = position;
-              };
+          home-manager.users = mapAttrs (
+            user: _:
+            let
+              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
+            in
+            {
+              wayland.desktopManager.cosmic.panels = mkIf enable [
+                {
+                  name = "Dock";
+                  anchor = mkRON "enum" position;
+                  anchor_gap = gaps;
 
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/anchor_gap" = {
-                inherit force;
-                text = if gaps then "true" else "false";
-              };
+                  autohide =
+                    if autohide then
+                      mkRON "optional" {
+                        wait_time = 1000;
+                        transition_time = 200;
+                        handle_size = 4;
+                        unhide_delay = 200;
+                      }
+                    else
+                      {
+                        __type = "optional";
+                        value = null;
+                      };
 
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/autohide" = {
-                inherit force;
-                text =
-                  if autohide then
-                    ''
-                      Some((
-                          wait_time: 1000,
-                          transition_time: 200,
-                          handle_size: 4,
-                          unhide_delay: 200,
-                      ))
-                    ''
-                  else
-                    "None";
-              };
+                  background = mkRON "enum" themeMode;
+                  exclusive_zone = false;
+                  expand_to_edges = expand;
+                  keyboard_interactivity = mkRON "enum" "OnDemand";
+                  layer = mkRON "enum" "Top";
+                  margin = 0;
+                  opacity = opacity / 100.0;
 
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/background" = {
-                inherit force;
-                text = themeMode;
-              };
+                  output =
+                    if (monitor == "") then
+                      mkRON "enum" "All"
+                    else
+                      {
+                        __type = "enum";
+                        variant = "Name";
+                        value = [ monitor ];
+                      };
 
-              ".config/cosmic/com.system76.CosmicPanel/v1/entries" = {
-                inherit force;
-                text = if !enable then ''["Panel"]'' else ''["Panel", "Dock",]'';
-              };
+                  padding = 0;
 
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/expand_to_edges" = {
-                inherit force;
-                text = if expand then "true" else "false";
-              };
+                  plugins_center = mkRON "optional" center;
 
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/plugins_center" = {
-                inherit force;
+                  plugins_wings = mkRON "optional" (mkRON "tuple" [
+                    left
+                    right
+                  ]);
 
-                text = ''
-                  Some([
-                      ${(concatMapStringsSep "" (plugin: ''"${plugin}",'') center)}
-                  ])
-                '';
-              };
+                  size = mkRON "enum" size;
+                  spacing = 0;
+                  border_radius = 12;
 
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/plugins_wings" = {
-                inherit force;
+                  size_wings = {
+                    __type = "optional";
+                    value = null;
+                  };
 
-                text = ''
-                  Some(([
-                      ${(concatMapStringsSep "" (plugin: ''"${plugin}",'') left)}
-                  ], [
-                      ${(concatMapStringsSep "" (plugin: ''"${plugin}",'') right)}
-                  ]))
-                '';
-              };
+                  size_center = {
+                    __type = "optional";
+                    value = null;
+                  };
 
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/opacity" = {
-                inherit force;
-                text = "${toString (opacity / 100)}.0";
-              };
-
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/output" = {
-                inherit force;
-                text = if (monitor == "") then "All" else ''Name("${monitor}")'';
-              };
-
-              ".config/cosmic/com.system76.CosmicPanel.Dock/v1/size" = {
-                inherit force;
-                text = size;
-              };
-            };
-          }) users;
+                  autohover_delay_ms = mkRON "optional" 500;
+                  padding_overlap = 0.5;
+                }
+              ];
+            }
+          ) users;
         }
       )
     ];

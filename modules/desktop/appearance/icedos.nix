@@ -35,7 +35,6 @@
         {
           config,
           lib,
-          pkgs,
           ...
         }:
         let
@@ -46,7 +45,6 @@
           home-manager.users = mapAttrs (
             user: _:
             let
-              inherit (builtins) fromJSON;
               inherit (desktop) accentColor;
               inherit (desktop.cosmic) appearance;
 
@@ -58,68 +56,8 @@
                 ;
 
               inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-
-              inherit (lib)
-                elemAt
-                genList
-                readFile
-                ;
-
-              generateColor =
-                color:
-                let
-                  inherit (pkgs) bc runCommand;
-                  bcBin = "${bc}/bin/bc";
-                in
-
-                readFile
-                  "${runCommand "hex-to-rgb-tuple" { } ''
-                    function printTuple() {
-                      echo "scale=6; $1/255" | ${bcBin}
-                    }
-
-                    function editColor() {
-                        _r=$1
-                        _g=$2
-                        _b=$3
-
-                        ((r += _r))
-                        ((g += _g))
-                        ((b += _b))
-
-                        r=$(normalizeColor $r)
-                        g=$(normalizeColor $g)
-                        b=$(normalizeColor $b)
-                    }
-
-                    function normalizeColor() {
-                      current_color=$1
-
-                      if (( $1 < 0 )); then
-                        current_color=0
-                      elif (( $1 > 255 )); then
-                        current_color=255
-                      fi
-
-                      echo $current_color
-                    }
-
-                    hex="#${color}"
-
-                    r=$(printf "%d" 0x''${hex:1:2})
-                    g=$(printf "%d" 0x''${hex:3:2})
-                    b=$(printf "%d" 0x''${hex:5:2})
-
-                    r=$(printTuple $r)
-                    g=$(printTuple $g)
-                    b=$(printTuple $b)
-
-                    [[ (( $r < 1 )) ]] && r="0$r" || r="1.0"
-                    [[ (( $g < 1 )) ]] && g="0$g" || g="1.0"
-                    [[ (( $b < 1 )) ]] && b="0$b" || b="1.0"
-
-                    echo "[ $r, $g, $b ]" > $out
-                  ''}";
+              inherit (lib) elemAt genList;
+              inherit (import ../../../lib.nix { inherit lib; }) hexToRgb;
 
               generateRgbRon =
                 {
@@ -127,7 +65,7 @@
                   alpha ? -1,
                 }:
                 let
-                  rgb = fromJSON (generateColor color);
+                  rgb = hexToRgb color;
                   red = elemAt rgb 0;
                   green = elemAt rgb 1;
                   blue = elemAt rgb 2;

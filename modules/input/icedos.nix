@@ -81,7 +81,6 @@
           config,
           icedosLib,
           lib,
-          pkgs,
           ...
         }:
 
@@ -113,6 +112,27 @@
 
               inherit (icedosLib) abortIf;
               inherit (lib) elem flatten mapAttrs;
+              inherit (import ../../lib.nix { inherit lib; }) mouseSpeedToCosmicSpeed pow2;
+
+              mouseSpeedValue =
+                if
+                  (abortIf (
+                    mouseSpeed < 0 || mouseSpeed > 100
+                  ) "The cosmic mouse speed has to be set between 0 - 100, ${toString mouseSpeed} is out of range!")
+                then
+                  mouseSpeedToCosmicSpeed mouseSpeed
+                else
+                  0.0;
+
+              scrollFactorValue =
+                if
+                  (abortIf (scrollingSpeed < 1 || scrollingSpeed > 100)
+                    "The cosmic scrolling speed has to be set between 1 - 100, ${toString scrollingSpeed} is out of range!"
+                  )
+                then
+                  pow2 ((0.1 * scrollingSpeed) - 5.0)
+                else
+                  1.0;
             in
             mapAttrs (
               user: _:
@@ -120,74 +140,35 @@
                 inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
               in
               {
-                home.file.".config/cosmic/com.system76.CosmicComp/v1/input_default" = {
-                  force = true;
-
-                  text = ''
-                    (
-                        state: Enabled,
-                        acceleration: Some((
-                            profile: Some(${if acceleration then "Adaptive" else "Flat"}),
-                            speed: ${
-                              if
-                                (abortIf (
-                                  mouseSpeed < 0 || mouseSpeed > 100
-                                ) "The cosmic mouse speed has to be set between 0 - 100, ${toString mouseSpeed} is out of range!")
-                              then
-                                let
-                                  slope = 0.014142271248762554;
-                                  y = -0.8099999999999998;
-                                in
-                                "${toString ((slope * mouseSpeed) + y)}"
-                              else
-                                ""
-                            },
-                        )),
-                        left_handed: Some(${if primaryButtonRight then "true" else "false"}),
-                        scroll_config: Some((
-                            method: None,
-                            natural_scroll: Some(${if naturalScrolling then "true" else "false"}),
-                            scroll_button: None,
-                            scroll_factor: Some(${
-                              let
-                                transformScrollingSpeed =
-                                  speed:
-                                  let
-                                    inherit (lib) readFile;
-                                    inherit (pkgs) bc runCommand;
-                                    bcBin = "${bc}/bin/bc";
-                                    speed' = toString speed;
-                                  in
-                                  if
-                                    (abortIf (
-                                      speed < 1 || speed > 100
-                                    ) "The cosmic scrolling speed has to be set between 1 - 100, ${speed'} is out of range!")
-                                  then
-                                    readFile "${runCommand "cosmic-scrolling-speed-calculator" { } ''
-                                      raw_result=$(echo "
-                                        scale=17;
-                                        exponent = (0.1 * ${speed'}) - 5;
-                                        base_ln = l(2);
-                                        y = e(exponent * base_ln);
-                                        y
-                                      " | ${bcBin} -l)
-
-                                      final_result=$(printf "%.17f" "$raw_result" | sed 's/^\(.*\)\.0*$/\1/')
-
-                                      echo "$final_result" > $out
-                                    ''}"
-                                  else
-                                    "";
-                              in
-                              "${transformScrollingSpeed scrollingSpeed}"
-                            }),
-                        )),
-                    )
-                  '';
-                };
-
                 wayland.desktopManager.cosmic = {
                   compositor = {
+                    input_default = {
+                      state = mkRON "enum" "Enabled";
+
+                      acceleration = mkRON "optional" {
+                        profile = mkRON "optional" (mkRON "enum" (if acceleration then "Adaptive" else "Flat"));
+                        speed = mouseSpeedValue;
+                      };
+
+                      left_handed = mkRON "optional" primaryButtonRight;
+
+                      scroll_config = mkRON "optional" {
+                        method = {
+                          __type = "optional";
+                          value = null;
+                        };
+
+                        natural_scroll = mkRON "optional" naturalScrolling;
+
+                        scroll_button = {
+                          __type = "optional";
+                          value = null;
+                        };
+
+                        scroll_factor = mkRON "optional" scrollFactorValue;
+                      };
+                    };
+
                     keyboard_config = {
                       numlock_state = mkRON "enum" (
                         if

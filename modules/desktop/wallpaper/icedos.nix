@@ -46,7 +46,7 @@
           config,
           icedosLib,
           lib,
-          pkgs,
+
           ...
         }:
         let
@@ -81,29 +81,7 @@
                 toUpper
                 ;
 
-              generateColor =
-                color:
-                let
-                  inherit (lib) readFile;
-                  inherit (pkgs) bc runCommand;
-                  bcBin = "${bc}/bin/bc";
-                in
-                readFile "${
-                  runCommand "hex-to-rgb-tuple" { } ''
-                    function printTuple() {
-                      echo "scale=8; $1/255" | ${bcBin}
-                    }
-
-                    mkdir -p $out
-                    hex="#${color}"
-
-                    r=$(printf "%d" 0x''${hex:1:2})
-                    g=$(printf "%d" 0x''${hex:3:2})
-                    b=$(printf "%d" 0x''${hex:5:2})
-
-                    echo "[$(printTuple $r), $(printTuple $g), $(printTuple $b)]" > $out/color
-                  ''
-                }/color";
+              inherit (import ../../../lib.nix { inherit lib; }) hexToRgb;
 
               generateWallpaper =
                 source:
@@ -129,7 +107,7 @@
                       {
                         colors =
                           let
-                            color = mkRON "tuple" (builtins.fromJSON (generateColor value));
+                            color = mkRON "tuple" (hexToRgb value);
                           in
                           [
                             color
