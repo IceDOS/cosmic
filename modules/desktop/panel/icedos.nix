@@ -133,7 +133,7 @@
 
                 ".config/cosmic/com.system76.CosmicPanel.Panel/v1/exclusive_zone" = {
                   inherit force;
-                  text = if autohide then "true" else "false";
+                  text = if autohide then "false" else "true";
                 };
 
                 ".config/cosmic/com.system76.CosmicPanel.Panel/v1/expand_to_edges" = {
@@ -176,6 +176,61 @@
                 ".config/cosmic/com.system76.CosmicPanel.Panel/v1/size" = {
                   inherit force;
                   text = size;
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/name" = {
+                  inherit force;
+                  text = ''"Panel"'';
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/layer" = {
+                  inherit force;
+                  text = "Top";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/keyboard_interactivity" = {
+                  inherit force;
+                  text = "OnDemand";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/padding" = {
+                  inherit force;
+                  text = "0";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/spacing" = {
+                  inherit force;
+                  text = "0";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/border_radius" = {
+                  inherit force;
+                  text = "0";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/margin" = {
+                  inherit force;
+                  text = "0";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/size_wings" = {
+                  inherit force;
+                  text = "None";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/size_center" = {
+                  inherit force;
+                  text = "None";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/autohover_delay_ms" = {
+                  inherit force;
+                  text = "Some(500)";
+                };
+
+                ".config/cosmic/com.system76.CosmicPanel.Panel/v1/padding_overlap" = {
+                  inherit force;
+                  text = "0.5";
                 };
               };
 
