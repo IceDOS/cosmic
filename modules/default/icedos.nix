@@ -75,7 +75,7 @@
               cosmic-store
               cosmic-term
             ]
-            ++ (pkgMapper excludeDefaultPackages);
+            ++ (pkgMapper pkgs excludeDefaultPackages);
 
           services.desktopManager.cosmic = {
             enable = true;
