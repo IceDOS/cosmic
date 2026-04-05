@@ -16,12 +16,14 @@
         ;
 
       inherit (cosmic-applets) steamGameIconMatcher;
+
       inherit (cosmic-comp)
         disableMonitorsOnLock
         fixTilingHintClipping
         fixWakeFromSleep
         perWindowKeyboardLayout
         ;
+
       inherit (cosmic-notifications) windowMatchingRoundness;
       inherit (cosmic-osd) keyboardLayoutOsd;
       inherit (cosmic-panel.autohide) alwaysHide;

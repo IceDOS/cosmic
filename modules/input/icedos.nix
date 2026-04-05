@@ -147,7 +147,7 @@
 
                       acceleration = mkRON "optional" {
                         profile = mkRON "optional" (mkRON "enum" (if acceleration then "Adaptive" else "Flat"));
-                        speed = mouseSpeedValue;
+                        speed = mkRON "raw" (toString mouseSpeedValue);
                       };
 
                       left_handed = mkRON "optional" primaryButtonRight;
