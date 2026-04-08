@@ -2,9 +2,7 @@
 steamGameIconMatcher = false
 
 [icedos.desktop.cosmic.patches.cosmic-comp]
-disableMonitorsOnLock = false
 fixTilingHintClipping = false
-fixWakeFromSleep = false
 perWindowKeyboardLayout = false
 
 [icedos.desktop.cosmic.patches.cosmic-notifications]

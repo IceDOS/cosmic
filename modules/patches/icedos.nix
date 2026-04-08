@@ -18,9 +18,7 @@
       inherit (cosmic-applets) steamGameIconMatcher;
 
       inherit (cosmic-comp)
-        disableMonitorsOnLock
         fixTilingHintClipping
-        fixWakeFromSleep
         perWindowKeyboardLayout
         ;
 
@@ -31,9 +29,7 @@
     in
     {
       cosmic-comp = {
-        disableMonitorsOnLock = mkBoolOption { default = disableMonitorsOnLock; };
         fixTilingHintClipping = mkBoolOption { default = fixTilingHintClipping; };
-        fixWakeFromSleep = mkBoolOption { default = fixWakeFromSleep; };
         perWindowKeyboardLayout = mkBoolOption { default = perWindowKeyboardLayout; };
       };
 
@@ -64,14 +60,7 @@
             ;
 
           inherit (cosmic-applets) steamGameIconMatcher;
-
-          inherit (cosmic-comp)
-            disableMonitorsOnLock
-            fixTilingHintClipping
-            fixWakeFromSleep
-            perWindowKeyboardLayout
-            ;
-
+          inherit (cosmic-comp) fixTilingHintClipping perWindowKeyboardLayout;
           inherit (cosmic-notifications) windowMatchingRoundness;
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
@@ -79,8 +68,7 @@
           inherit (lib) mkIf optional;
 
           doCheck = false;
-          hasCosmicCompPatch =
-            disableMonitorsOnLock || fixTilingHintClipping || fixWakeFromSleep || perWindowKeyboardLayout;
+          hasCosmicCompPatch = fixTilingHintClipping || perWindowKeyboardLayout;
         in
         {
           xdg.portal.config.common = mkIf useGtkFilePicker {
@@ -97,9 +85,7 @@
 
                     patches =
                       (old.patches or [ ])
-                      ++ optional disableMonitorsOnLock ./cosmic-comp/disable-monitors-on-lock.patch
                       ++ optional fixTilingHintClipping ./cosmic-comp/fix-tiling-hint-clipping.patch
-                      ++ optional fixWakeFromSleep ./cosmic-comp/fix-wake-from-sleep.patch
                       ++ optional perWindowKeyboardLayout ./cosmic-comp/per-window-keyboard-layout.patch;
                   });
                 }
