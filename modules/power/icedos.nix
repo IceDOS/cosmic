@@ -38,6 +38,12 @@
 
           swayidle = getExe pkgs.swayidle;
           wlopm = getExe pkgs.wlopm;
+          wljoywake = getExe (
+            pkgs.wljoywake.overrideAttrs (old: {
+              buildInputs = (old.buildInputs or [ ]) ++ [ pkgs.wlr-protocols ];
+              patches = (old.patches or [ ]) ++ [ ./wljoywake-layer-shell.patch ];
+            })
+          );
           loginctl = getExe' pkgs.systemd "loginctl";
 
           mkIdleScript =
@@ -58,6 +64,10 @@
             pkgs.writeShellScriptBin "cosmic-idle" ''
               exec ${swayidle} -w ${timeouts} ${lockEvents}
             '';
+
+          gamepadIdleScript = pkgs.writeShellScriptBin "cosmic-gamepad-idle" ''
+            exec ${wljoywake}
+          '';
 
           greeterIdleScript = pkgs.writeShellScriptBin "cosmic-greeter-idle" ''
             uid=$(${pkgs.coreutils}/bin/id -u cosmic-greeter)
@@ -99,10 +109,12 @@
                   {
                     Unit = {
                       Description = "Idle manager (swayidle) for COSMIC session";
+
                       After = [
                         "cosmic-session.target"
                         "graphical-session.target"
                       ];
+
                       PartOf = "graphical-session.target";
                     };
 
@@ -110,6 +122,28 @@
 
                     Service = {
                       ExecStart = "${mkIdleScript user}/bin/cosmic-idle";
+                      Restart = "on-failure";
+                      RestartSec = 3;
+                    };
+                  };
+
+              systemd.user.services.cosmic-gamepad-idle =
+                mkIf (users.${user}.idle.lock.enable || disableMonitors.enable)
+                  {
+                    Unit = {
+                      Description = "Gamepad idle inhibitor (wljoywake) for COSMIC session";
+                      After = [
+                        "cosmic-session.target"
+                        "graphical-session.target"
+                      ];
+
+                      PartOf = "graphical-session.target";
+                    };
+
+                    Install.WantedBy = [ "cosmic-session.target" ];
+
+                    Service = {
+                      ExecStart = "${gamepadIdleScript}/bin/cosmic-gamepad-idle";
                       Restart = "on-failure";
                       RestartSec = 3;
                     };
