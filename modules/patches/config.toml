@@ -2,6 +2,7 @@
 steamGameIconMatcher = false
 
 [icedos.desktop.cosmic.patches.cosmic-comp]
+dmemForegroundBooster = false
 fixTilingHintClipping = false
 perWindowKeyboardLayout = false
 

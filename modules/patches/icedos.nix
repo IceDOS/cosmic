@@ -18,6 +18,7 @@
       inherit (cosmic-applets) steamGameIconMatcher;
 
       inherit (cosmic-comp)
+        dmemForegroundBooster
         fixTilingHintClipping
         perWindowKeyboardLayout
         ;
@@ -29,6 +30,7 @@
     in
     {
       cosmic-comp = {
+        dmemForegroundBooster = mkBoolOption { default = dmemForegroundBooster; };
         fixTilingHintClipping = mkBoolOption { default = fixTilingHintClipping; };
         perWindowKeyboardLayout = mkBoolOption { default = perWindowKeyboardLayout; };
       };
@@ -59,7 +61,7 @@
             ;
 
           inherit (cosmic-applets) steamGameIconMatcher;
-          inherit (cosmic-comp) fixTilingHintClipping perWindowKeyboardLayout;
+          inherit (cosmic-comp) dmemForegroundBooster fixTilingHintClipping perWindowKeyboardLayout;
           inherit (cosmic-notifications) windowMatchingRoundness;
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
@@ -67,7 +69,7 @@
           inherit (lib) mkIf optional;
 
           doCheck = false;
-          hasCosmicCompPatch = fixTilingHintClipping || perWindowKeyboardLayout;
+          hasCosmicCompPatch = dmemForegroundBooster || fixTilingHintClipping || perWindowKeyboardLayout;
         in
         {
           xdg.portal.config.common = mkIf useGtkFilePicker {
@@ -84,6 +86,7 @@
 
                     patches =
                       (old.patches or [ ])
+                      ++ optional dmemForegroundBooster ./cosmic-comp/dmem-foreground-booster.patch
                       ++ optional fixTilingHintClipping ./cosmic-comp/fix-tiling-hint-clipping.patch
                       ++ optional perWindowKeyboardLayout ./cosmic-comp/per-window-keyboard-layout.patch;
                   });
