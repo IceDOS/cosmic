@@ -25,7 +25,7 @@
       inherit (cosmic-notifications) windowMatchingRoundness;
       inherit (cosmic-osd) keyboardLayoutOsd;
       inherit (cosmic-panel.autohide) alwaysHide;
-      inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName useGtkFilePicker;
+      inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
     in
     {
       cosmic-comp = {
@@ -39,7 +39,6 @@
       cosmic-panel.autohide.alwaysHide = mkBoolOption { default = alwaysHide; };
 
       xdg-desktop-portal-cosmic = {
-        filePickerDefaultSortName = mkBoolOption { default = filePickerDefaultSortName; };
         useGtkFilePicker = mkBoolOption { default = useGtkFilePicker; };
       };
     };
@@ -64,7 +63,7 @@
           inherit (cosmic-notifications) windowMatchingRoundness;
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
-          inherit (xdg-desktop-portal-cosmic) filePickerDefaultSortName useGtkFilePicker;
+          inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
           inherit (lib) mkIf optional;
 
           doCheck = false;
@@ -144,25 +143,6 @@
                         --replace-fail \
                         'let intellihide = self.overlap_notify.is_some();' \
                         'let intellihide = false;'
-                    '';
-
-                    doCheck = false;
-                  });
-                }
-              )
-              ++ optional filePickerDefaultSortName (
-                final: prev: {
-                  xdg-desktop-portal-cosmic = prev.xdg-desktop-portal-cosmic.overrideAttrs (oldAttrs: {
-                    postPatch = (oldAttrs.postPatch or "") + ''
-                      dialog="$cargoDepsCopy"/source-git-*/cosmic-files-*/src/dialog.rs
-                      substituteInPlace $dialog \
-                        --replace-fail \
-                        'tab.sort_name = tab::HeadingOptions::Modified;' \
-                        '// sort_name default from Tab::new'
-                      substituteInPlace $dialog \
-                        --replace-fail \
-                        'tab.sort_direction = false;' \
-                        '// sort_direction default from Tab::new'
                     '';
 
                     doCheck = false;

@@ -15,5 +15,4 @@ keyboardLayoutOsd = false
 alwaysHide = false
 
 [icedos.desktop.cosmic.patches.xdg-desktop-portal-cosmic]
-filePickerDefaultSortName = false
 useGtkFilePicker = false
