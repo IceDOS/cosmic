@@ -96,7 +96,7 @@ diff --git a/src/components/osd_indicator.rs b/src/components/osd_indicator.rs
          let icon = widget::icon::from_name(self.params.icon_name());
 
          // Use large radius on value-OSD to enforce pill-shape with "Round" system style
-@@ -390,6 +398,73 @@
+@@ -390,6 +398,74 @@
          .into()
      }
 
@@ -134,23 +134,24 @@ diff --git a/src/components/osd_indicator.rs b/src/components/osd_indicator.rs
 +                },
 +                shadow: Default::default(),
 +                icon_color: Some(theme.cosmic().on_bg_color().into()),
++                snap: true,
 +            }
 +        }));
 +
 +        let osd_contents = if self.margin.0 != 0 || self.margin.2 != 0 {
 +            Element::from(widget::column::with_children(vec![
-+                vertical_space().height(self.margin.0 as f32).into(),
++                widget::space::vertical().height(self.margin.0 as f32).into(),
 +                osd_contents.into(),
-+                vertical_space().height(self.margin.2 as f32).into(),
++                widget::space::vertical().height(self.margin.2 as f32).into(),
 +            ]))
 +        } else {
 +            osd_contents.into()
 +        };
 +        let osd_contents = if self.margin.1 != 0 || self.margin.3 != 0 {
 +            Element::from(widget::row::with_children(vec![
-+                horizontal_space().width(self.margin.1 as f32).into(),
++                widget::space::horizontal().width(self.margin.1 as f32).into(),
 +                osd_contents,
-+                horizontal_space().width(self.margin.3 as f32).into(),
++                widget::space::horizontal().width(self.margin.3 as f32).into(),
 +            ]))
 +        } else {
 +            osd_contents
