@@ -3,8 +3,9 @@
 {
   options.icedos.desktop.cosmic.accessibility.magnifier =
     let
-      inherit (icedosLib) mkBoolOption mkNumberOption mkStrOption;
-      inherit (lib) readFile;
+      inherit (icedosLib) mkBoolOption mkNumberOption;
+      inherit (lib) mkOption readFile types;
+
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.accessibility.magnifier)
         mouseZoomShortcuts
         moveZoom
@@ -14,7 +15,16 @@
         ;
     in
     {
-      moveZoom = mkStrOption { default = moveZoom; };
+      moveZoom = mkOption {
+        type = types.enum [
+          "Continuously"
+          "OnEdge"
+          "Centered"
+        ];
+
+        default = moveZoom;
+      };
+
       mouseZoomShortcuts = mkBoolOption { default = mouseZoomShortcuts; };
       overlay = mkBoolOption { default = overlay; };
       startOnLogin = mkBoolOption { default = startOnLogin; };
@@ -27,7 +37,6 @@
       (
         {
           config,
-          icedosLib,
           lib,
           ...
         }:
@@ -50,32 +59,12 @@
                   startOnLogin
                   zoomPercentage
                   ;
-
-                inherit (icedosLib) abortIf;
-                inherit (lib) elem;
               in
               {
                 wayland.desktopManager.cosmic.compositor.accessibility_zoom = {
                   enable_mouse_zoom_shortcuts = mouseZoomShortcuts;
                   increment = zoomPercentage;
-
-                  view_moves =
-                    if
-                      (abortIf
-                        (
-                          !(elem moveZoom [
-                            "Continuously"
-                            "OnEdge"
-                            "Centered"
-                          ])
-                        )
-                        ''cosmic move zoom view attribute has to be one of Continuously, OnEdge, Centered - "${moveZoom}" is invalid!''
-                      )
-                    then
-                      mkRON "enum" moveZoom
-                    else
-                      "";
-
+                  view_moves = mkRON "enum" moveZoom;
                   show_overlay = overlay;
                   start_on_login = startOnLogin;
                 };

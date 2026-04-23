@@ -4,13 +4,9 @@
   options.icedos.desktop.cosmic.appearance =
     let
       inherit (icedosLib) mkBoolOption mkNumberOption mkStrOption;
-      inherit
-        (
-          let
-            inherit (lib) readFile;
-          in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance
-        )
+      inherit (lib) mkOption types readFile;
+
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance)
         accentBase16Slot
         activeHint
         followStylix
@@ -22,7 +18,27 @@
         ;
     in
     {
-      accentBase16Slot = mkStrOption { default = accentBase16Slot; };
+      accentBase16Slot = mkOption {
+        type = types.enum [
+          ""
+          "base08"
+          "base09"
+          "base0A"
+          "base0B"
+          "base0C"
+          "base0D"
+          "base0E"
+          "base0F"
+        ];
+
+        default = accentBase16Slot;
+
+        description = ''
+          Which base16 slot cosmic should use for its highlight/accent color.
+          Empty string "" inherits icedos.desktop.stylix.accentBase16Slot.
+        '';
+      };
+
       activeHint = mkNumberOption { default = activeHint; };
       followStylix = mkBoolOption { default = followStylix; };
       gaps = mkNumberOption { default = gaps; };
@@ -68,7 +84,8 @@
                   config.icedos.desktop.stylix.accentBase16Slot or "base0D";
 
               inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-              inherit (icedosLib) abortIf generateAccentColor;
+              inherit (icedosLib) generateAccentColor;
+
               inherit (lib)
                 elemAt
                 genList
@@ -76,17 +93,15 @@
                 optionalAttrs
                 readFile
                 ;
+
               inherit (import ../../../lib.nix { inherit lib; }) hexToRgb;
 
-              appearanceDefaults =
-                (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance;
+              appearanceDefaults = (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance;
 
               stylixEnabled = (config.stylix.enable or false) && followStylix;
               stylixColors = config.lib.stylix.colors or { };
 
-              pickColor =
-                slot: fallback:
-                if stylixEnabled then stylixColors.${slot} else fallback;
+              pickColor = slot: fallback: if stylixEnabled then stylixColors.${slot} else fallback;
 
               generateRgbRon =
                 {
@@ -189,17 +204,7 @@
 
               accent =
                 if stylixEnabled then
-                  let
-                    slotMatch = builtins.match "base0[89A-F]" accentBase16Slot;
-                  in
-                  if
-                    (abortIf (
-                      slotMatch == null
-                    ) "icedos.desktop.cosmic.appearance.accentBase16Slot must be one of base08..base0F")
-                  then
-                    generateRgbRon { color = stylixColors.${accentBase16Slot}; }
-                  else
-                    null
+                  generateRgbRon { color = stylixColors.${accentBase16Slot}; }
                 else
                   generateRgbRon { color = fallbackAccentHex; };
 
@@ -253,12 +258,7 @@
 
                     iconTheme =
                       if stylixIconThemeEnabled then
-                        (
-                          if mode == "light" then
-                            config.stylix.icons.light
-                          else
-                            config.stylix.icons.dark
-                        )
+                        (if mode == "light" then config.stylix.icons.light else config.stylix.icons.dark)
                       else
                         "Tela-black-dark";
 

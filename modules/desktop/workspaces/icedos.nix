@@ -3,7 +3,8 @@
 {
   options.icedos.desktop.cosmic.workspaces =
     let
-      inherit (icedosLib) mkBoolOption mkStrOption;
+      inherit (icedosLib) mkBoolOption;
+      inherit (lib) mkOption types;
 
       inherit
         (
@@ -18,7 +19,13 @@
         ;
     in
     {
-      orientation = mkStrOption { default = orientation; };
+      orientation = mkOption {
+        type = types.enum [
+          "Horizontal"
+          "Vertical"
+        ];
+        default = orientation;
+      };
       perScreen = mkBoolOption { default = perScreen; };
       tile = mkBoolOption { default = tile; };
     };
@@ -50,30 +57,12 @@
             user: _:
             let
               inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-              inherit (icedosLib) abortIf;
-              inherit (lib) elem;
             in
             {
               wayland.desktopManager.cosmic.compositor = {
                 autotile = tile;
                 workspaces = {
-                  workspace_layout = mkRON "enum" (
-                    if
-                      (abortIf
-                        (
-                          !(elem orientation [
-                            "Horizontal"
-                            "Vertical"
-                          ])
-                        )
-                        ''cosmic workspaces orientation has to be one of Horizontal, Vertical - "${orientation}" is invalid!''
-                      )
-                    then
-                      orientation
-                    else
-                      ""
-                  );
-
+                  workspace_layout = mkRON "enum" orientation;
                   workspace_mode = mkRON "enum" (if perScreen then "OutputBound" else "Global");
                 };
               };
