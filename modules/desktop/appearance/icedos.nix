@@ -11,7 +11,9 @@
           in
           (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance
         )
+        accentBase16Slot
         activeHint
+        followStylix
         gaps
         gtkTheming
         interfaceDensity
@@ -20,7 +22,9 @@
         ;
     in
     {
+      accentBase16Slot = mkStrOption { default = accentBase16Slot; };
       activeHint = mkNumberOption { default = activeHint; };
+      followStylix = mkBoolOption { default = followStylix; };
       gaps = mkNumberOption { default = gaps; };
       gtkTheming = mkBoolOption { default = gtkTheming; };
       interfaceDensity = mkStrOption { default = interfaceDensity; };
@@ -45,19 +49,44 @@
           home-manager.users = mapAttrs (
             user: _:
             let
-              inherit (desktop) accentColor;
               inherit (desktop.cosmic) appearance;
 
               inherit (appearance)
                 activeHint
+                followStylix
                 gtkTheming
                 interfaceDensity
                 roundness
                 ;
 
+              # Accent slot: honor explicit cosmic override, otherwise inherit
+              # the global stylix choice so everything matches.
+              accentBase16Slot =
+                if appearance.accentBase16Slot != "" then
+                  appearance.accentBase16Slot
+                else
+                  config.icedos.desktop.stylix.accentBase16Slot or "base0D";
+
               inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-              inherit (lib) elemAt genList;
+              inherit (icedosLib) abortIf generateAccentColor;
+              inherit (lib)
+                elemAt
+                genList
+                hasAttr
+                optionalAttrs
+                readFile
+                ;
               inherit (import ../../../lib.nix { inherit lib; }) hexToRgb;
+
+              appearanceDefaults =
+                (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance;
+
+              stylixEnabled = (config.stylix.enable or false) && followStylix;
+              stylixColors = config.lib.stylix.colors or { };
+
+              pickColor =
+                slot: fallback:
+                if stylixEnabled then stylixColors.${slot} else fallback;
 
               generateRgbRon =
                 {
@@ -133,26 +162,63 @@
                 }
                 .${roundness};
 
-              isModeAuto = appearance.mode == "auto";
-              mode = if isModeAuto then "dark" else appearance.mode;
-              accent = generateRgbRon { color = accentColor; };
+              stylixPolarityMapped =
+                let
+                  polarity = config.stylix.polarity or "dark";
+                in
+                if polarity == "either" then "auto" else polarity;
+
+              effectiveMode =
+                if stylixEnabled && appearance.mode == appearanceDefaults.mode then
+                  stylixPolarityMapped
+                else
+                  appearance.mode;
+
+              isModeAuto = effectiveMode == "auto";
+              mode = if isModeAuto then "dark" else effectiveMode;
+
+              fallbackAccentHex =
+                let
+                  raw = generateAccentColor {
+                    inherit (desktop) accentColor;
+                    gnomeAccentColor = desktop.gnome.accentColor or "blue";
+                    hasGnome = hasAttr "gnome" desktop;
+                  };
+                in
+                builtins.substring 1 (builtins.stringLength raw - 1) raw;
+
+              accent =
+                if stylixEnabled then
+                  let
+                    slotMatch = builtins.match "base0[89A-F]" accentBase16Slot;
+                  in
+                  if
+                    (abortIf (
+                      slotMatch == null
+                    ) "icedos.desktop.cosmic.appearance.accentBase16Slot must be one of base08..base0F")
+                  then
+                    generateRgbRon { color = stylixColors.${accentBase16Slot}; }
+                  else
+                    null
+                else
+                  generateRgbRon { color = fallbackAccentHex; };
 
               bg_color = generateRgbRon {
-                color = "1d1d20";
+                color = pickColor "base00" "1d1d20";
                 alpha = 1.0;
               };
 
               primary_container_bg = generateRgbRon {
-                color = "2e2e32";
+                color = pickColor "base01" "2e2e32";
                 alpha = 1.0;
               };
 
               secondary_container_bg = generateRgbRon {
-                color = "434347";
+                color = pickColor "base02" "434347";
                 alpha = 1.0;
               };
 
-              text_hint = generateRgbRon { color = "c0c0c1"; };
+              text_hint = generateRgbRon { color = pickColor "base04" "c0c0c1"; };
 
               generatedTheme = {
                 inherit
@@ -181,11 +247,37 @@
                   light = generatedTheme;
                 };
 
-                toolkit = {
-                  apply_theme_global = gtkTheming;
-                  icon_theme = "Tela-black-dark";
-                  header_size = mkRON "enum" interfaceDensity;
-                };
+                toolkit =
+                  let
+                    stylixIconThemeEnabled = stylixEnabled && (config.stylix.icons.enable or false);
+
+                    iconTheme =
+                      if stylixIconThemeEnabled then
+                        (
+                          if mode == "light" then
+                            config.stylix.icons.light
+                          else
+                            config.stylix.icons.dark
+                        )
+                      else
+                        "Tela-black-dark";
+
+                    fontSubmodule = family: {
+                      inherit family;
+                      stretch = mkRON "enum" "Normal";
+                      style = mkRON "enum" "Normal";
+                      weight = mkRON "enum" "Normal";
+                    };
+                  in
+                  {
+                    apply_theme_global = gtkTheming;
+                    icon_theme = iconTheme;
+                    header_size = mkRON "enum" interfaceDensity;
+                  }
+                  // optionalAttrs stylixEnabled {
+                    interface_font = fontSubmodule config.stylix.fonts.sansSerif.name;
+                    monospace_font = fontSubmodule config.stylix.fonts.monospace.name;
+                  };
               };
 
               home.file.".config/cosmic/com.system76.CosmicTheme.Mode/v1/auto_switch" = {

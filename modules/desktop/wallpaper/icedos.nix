@@ -66,7 +66,6 @@
                 fit
                 monitors
                 seconds
-                wallpaper
                 ;
 
               inherit (icedosLib) abortIf;
@@ -77,11 +76,31 @@
                 length
                 listToAttrs
                 mkIf
+                readFile
                 strings
                 toUpper
                 ;
 
               inherit (import ../../../lib.nix { inherit lib; }) hexToRgb;
+
+              wallpaperDefault =
+                (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.wallpaper.wallpaper;
+
+              stylixFollow =
+                (config.stylix.enable or false)
+                && (cosmic.appearance.followStylix or false);
+
+              stylixImagePath = toString (config.stylix.image or "");
+
+              wallpaper =
+                if
+                  stylixFollow
+                  && cosmic.wallpaper.wallpaper == wallpaperDefault
+                  && stylixImagePath != ""
+                then
+                  "path:${stylixImagePath}"
+                else
+                  cosmic.wallpaper.wallpaper;
 
               generateWallpaper =
                 source:
