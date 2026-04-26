@@ -1,14 +1,11 @@
-{ icedosLib, ... }:
+{ lib, ... }:
 
 {
   options.icedos.desktop.cosmic.brightnessControl.schedules =
     let
-      inherit (icedosLib) mkNumberOption mkSubmoduleListOption;
+      inherit (lib) mkOption;
     in
-    mkSubmoduleListOption { default = [ ]; } {
-      atHour = mkNumberOption { };
-      brightness = mkNumberOption { };
-    };
+    mkOption { default = [ ]; };
 
   outputs.nixosModules =
     { ... }:
@@ -31,34 +28,41 @@
             sort
             ;
 
-          # Sort schedule entries by atHour ascending
-          sorted = sort (a: b: a.atHour < b.atHour) schedules;
+          parseTime =
+            s:
+            let
+              parts = lib.splitString ":" s;
+              h = lib.toIntBase10 (builtins.elemAt parts 0);
+              m = lib.toIntBase10 (builtins.elemAt parts 1);
+            in
+            h * 60 + m;
 
-          # Generate shell case branches from schedule entries
+          sorted = sort (a: b: parseTime a.at < parseTime b.at) schedules;
+
           parsedSchedules = concatStringsSep "\n" (
             lib.imap0 (
               i: entry:
               let
                 brightness = toString (entry.brightness / 100.0);
-                hour = toString entry.atHour;
+                mins = toString (parseTime entry.at);
                 isLast = i == (builtins.length sorted - 1);
 
-                nextHour =
+                nextMins =
                   if isLast then
-                    toString (builtins.elemAt sorted 0).atHour
+                    toString (parseTime (builtins.elemAt sorted 0).at)
                   else
-                    toString (builtins.elemAt sorted (i + 1)).atHour;
+                    toString (parseTime (builtins.elemAt sorted (i + 1)).at);
               in
               if isLast then
-                # Last entry: covers from its atHour to the first entry's atHour (wrapping midnight)
+                # Last entry wraps past midnight: matches if now is at-or-after its time OR before the next.
                 ''
-                  if [ "$hour" -ge ${hour} ] || [ "$hour" -lt ${nextHour} ]; then
+                  if [ "$now" -ge ${mins} ] || [ "$now" -lt ${nextMins} ]; then
                     echo "${brightness}"
                     return
                   fi''
               else
                 ''
-                  if [ "$hour" -ge ${hour} ] && [ "$hour" -lt ${nextHour} ]; then
+                  if [ "$now" -ge ${mins} ] && [ "$now" -lt ${nextMins} ]; then
                     echo "${brightness}"
                     return
                   fi''
@@ -69,8 +73,7 @@
             last_brightness=""
 
             get_target_brightness() {
-              hour=$(${pkgs.coreutils}/bin/date +%H)
-              hour=$((10#$hour))
+              now=$((10#$(${pkgs.coreutils}/bin/date +%H) * 60 + 10#$(${pkgs.coreutils}/bin/date +%M)))
               ${parsedSchedules}
             }
 
