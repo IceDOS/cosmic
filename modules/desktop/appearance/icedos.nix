@@ -261,29 +261,45 @@
                         (if mode == "light" then config.stylix.icons.light else config.stylix.icons.dark)
                       else
                         "Tela-black-dark";
-
-                    fontSubmodule = family: {
-                      inherit family;
-                      stretch = mkRON "enum" "Normal";
-                      style = mkRON "enum" "Normal";
-                      weight = mkRON "enum" "Normal";
-                    };
                   in
                   {
                     apply_theme_global = gtkTheming;
                     icon_theme = iconTheme;
                     header_size = mkRON "enum" interfaceDensity;
-                  }
-                  // optionalAttrs stylixEnabled {
-                    interface_font = fontSubmodule config.stylix.fonts.sansSerif.name;
-                    monospace_font = fontSubmodule config.stylix.fonts.monospace.name;
                   };
               };
 
-              home.file.".config/cosmic/com.system76.CosmicTheme.Mode/v1/auto_switch" = {
-                inherit force;
-                text = if isModeAuto then "true" else "false";
-              };
+              home.file = {
+                ".config/cosmic/com.system76.CosmicTheme.Mode/v1/auto_switch" = {
+                  inherit force;
+                  text = if isModeAuto then "true" else "false";
+                };
+              }
+              // (
+                # cosmic-manager's configFile mechanism doesn't force-overwrite
+                # toolkit fonts once a stale value is on disk, so own these two
+                # files directly via home.file with force = true. Format must
+                # match exactly what COSMIC reads back as a RON struct.
+                let
+                  mkFontFile = family: {
+                    inherit force;
+                    text = ''
+                      (
+                          family: "${family}",
+                          stretch: Normal,
+                          style: Normal,
+                          weight: Normal,
+                      )
+                    '';
+                  };
+                in
+                optionalAttrs stylixEnabled {
+                  ".config/cosmic/com.system76.CosmicTk/v1/interface_font" =
+                    mkFontFile config.stylix.fonts.sansSerif.name;
+                  ".config/cosmic/com.system76.CosmicTk/v1/monospace_font" =
+                    mkFontFile config.stylix.fonts.monospace.name;
+                }
+              );
             }
           ) users;
         }

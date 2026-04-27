@@ -240,8 +240,12 @@
 
                       options = mkRON "optional" "
                         terminate:ctrl_alt_bksp
-                        ${if alternateCharactersKey != "" then ",lv3:${alternateCharactersKey}_switch" else ""}
-                        ${if capsLockKey != "" then ",caps:${capsLockKey}" else ""}
+                        ${
+                                                if alternateCharactersKey != "" then ",lv3:${alternateCharactersKey}_switch" else ""
+                                              }
+                        ${
+                                                if capsLockKey != "" then ",caps:${capsLockKey}" else ""
+                                              }
                         ${if composeKey != "" then ",compose:${composeKey}" else ""}";
 
                       repeat_delay = repeatDelay;

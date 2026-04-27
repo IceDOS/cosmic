@@ -133,10 +133,12 @@
 
                   plugins_center = mkRON "optional" center;
 
-                  plugins_wings = mkRON "optional" (mkRON "tuple" [
-                    left
-                    right
-                  ]);
+                  plugins_wings = mkRON "optional" (
+                    mkRON "tuple" [
+                      left
+                      right
+                    ]
+                  );
 
                   size = mkRON "enum" size;
                   spacing = 0;
