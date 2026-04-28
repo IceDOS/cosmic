@@ -16,7 +16,7 @@
         xdg-desktop-portal-cosmic
         ;
 
-      inherit (cosmic-applets) steamGameIconMatcher;
+      inherit (cosmic-applets) notificationHtmlMarkup steamGameIconMatcher;
 
       inherit (cosmic-comp)
         dmemForegroundBooster
@@ -37,7 +37,10 @@
         perWindowKeyboardLayout = mkBoolOption { default = perWindowKeyboardLayout; };
       };
 
-      cosmic-applets.steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
+      cosmic-applets = {
+        notificationHtmlMarkup = mkBoolOption { default = notificationHtmlMarkup; };
+        steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
+      };
       cosmic-notifications.windowMatchingRoundness = mkBoolOption { default = windowMatchingRoundness; };
       cosmic-osd.keyboardLayoutOsd = mkBoolOption { default = keyboardLayoutOsd; };
       cosmic-panel.autohide.alwaysHide = mkBoolOption { default = alwaysHide; };
@@ -64,17 +67,34 @@
             xdg-desktop-portal-cosmic
             ;
 
-          inherit (cosmic-applets) steamGameIconMatcher;
+          inherit (cosmic-applets) notificationHtmlMarkup steamGameIconMatcher;
           inherit (cosmic-comp) dmemForegroundBooster fixTilingHintClipping perWindowKeyboardLayout;
           inherit (cosmic-notifications) windowMatchingRoundness;
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
           inherit (pop-gtk-theme) skipInkscape;
           inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
-          inherit (lib) filter getName mkIf optional;
+
+          inherit (lib)
+            filter
+            getName
+            mkIf
+            optional
+            optionalString
+            ;
 
           doCheck = false;
           hasCosmicCompPatch = dmemForegroundBooster || fixTilingHintClipping || perWindowKeyboardLayout;
+
+          # libcosmic patch shared by cosmic-notifications and cosmic-applets;
+          # both vendor libcosmic separately, so the substitution must run in each build.
+          libcosmicCardRoundnessPatch = ''
+            iced_rs="$cargoDepsCopy"/source-git-*/libcosmic-*/src/theme/style/iced.rs
+            substituteInPlace $iced_rs \
+              --replace-fail \
+              'Button::Card => corner_radii.radius_xs.into(),' \
+              'Button::Card => corner_radii.radius_s.into(),'
+          '';
         in
         {
           xdg.portal.config.common = mkIf useGtkFilePicker {
@@ -97,14 +117,18 @@
                   });
                 }
               )
-              ++ optional steamGameIconMatcher (
+              ++ optional (steamGameIconMatcher || notificationHtmlMarkup || windowMatchingRoundness) (
                 final: prev: {
                   cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
                     inherit doCheck;
 
-                    patches = (old.patches or [ ]) ++ [
-                      ./cosmic-applets/steam-game-icon-matcher.patch
-                    ];
+                    patches =
+                      (old.patches or [ ])
+                      ++ optional steamGameIconMatcher ./cosmic-applets/steam-game-icon-matcher.patch
+                      ++ optional notificationHtmlMarkup ./cosmic-applets/notification-html-markup.patch;
+
+                    postPatch =
+                      (old.postPatch or "") + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
                   });
                 }
               )
@@ -131,15 +155,8 @@
               ++ optional windowMatchingRoundness (
                 final: prev: {
                   cosmic-notifications = prev.cosmic-notifications.overrideAttrs (oldAttrs: {
-                    postPatch = (oldAttrs.postPatch or "") + ''
-                      iced_rs="$cargoDepsCopy"/source-git-*/libcosmic-*/src/theme/style/iced.rs
-                      substituteInPlace $iced_rs \
-                        --replace-fail \
-                        'Button::Card => corner_radii.radius_xs.into(),' \
-                        'Button::Card => corner_radii.radius_s.into(),'
-                    '';
-
-                    doCheck = false;
+                    inherit doCheck;
+                    postPatch = (oldAttrs.postPatch or "") + libcosmicCardRoundnessPatch;
                   });
                 }
               )
