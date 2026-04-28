@@ -12,6 +12,7 @@
         cosmic-notifications
         cosmic-osd
         cosmic-panel
+        pop-gtk-theme
         xdg-desktop-portal-cosmic
         ;
 
@@ -26,6 +27,7 @@
       inherit (cosmic-notifications) windowMatchingRoundness;
       inherit (cosmic-osd) keyboardLayoutOsd;
       inherit (cosmic-panel.autohide) alwaysHide;
+      inherit (pop-gtk-theme) skipInkscape;
       inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
     in
     {
@@ -39,6 +41,7 @@
       cosmic-notifications.windowMatchingRoundness = mkBoolOption { default = windowMatchingRoundness; };
       cosmic-osd.keyboardLayoutOsd = mkBoolOption { default = keyboardLayoutOsd; };
       cosmic-panel.autohide.alwaysHide = mkBoolOption { default = alwaysHide; };
+      pop-gtk-theme.skipInkscape = mkBoolOption { default = skipInkscape; };
 
       xdg-desktop-portal-cosmic = {
         useGtkFilePicker = mkBoolOption { default = useGtkFilePicker; };
@@ -57,6 +60,7 @@
             cosmic-notifications
             cosmic-osd
             cosmic-panel
+            pop-gtk-theme
             xdg-desktop-portal-cosmic
             ;
 
@@ -65,8 +69,9 @@
           inherit (cosmic-notifications) windowMatchingRoundness;
           inherit (cosmic-osd) keyboardLayoutOsd;
           inherit (cosmic-panel.autohide) alwaysHide;
+          inherit (pop-gtk-theme) skipInkscape;
           inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
-          inherit (lib) mkIf optional;
+          inherit (lib) filter getName mkIf optional;
 
           doCheck = false;
           hasCosmicCompPatch = dmemForegroundBooster || fixTilingHintClipping || perWindowKeyboardLayout;
@@ -149,6 +154,28 @@
                     '';
 
                     doCheck = false;
+                  });
+                }
+              )
+              ++ optional skipInkscape (
+                final: prev: {
+                  pop-gtk-theme = prev.pop-gtk-theme.overrideAttrs (old: {
+                    nativeBuildInputs = filter (
+                      p:
+                      let
+                        name = getName p;
+                      in
+                      name != "inkscape" && name != "optipng"
+                    ) old.nativeBuildInputs;
+
+                    # Upstream commits pre-rendered PNGs; stubbing render-*.sh drops the inkscape build dep.
+                    postPatch = ''
+                      patchShebangs .
+                      for file in $(find -name 'render-*.sh'); do
+                        printf '#!${prev.runtimeShell}\nexit 0\n' > "$file"
+                        chmod +x "$file"
+                      done
+                    '';
                   });
                 }
               )
