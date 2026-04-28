@@ -16,29 +16,24 @@
       (
         {
           config,
-          lib,
           ...
         }:
 
+        let
+          inherit (config.icedos.desktop.cosmic.accessibility) monoSound;
+          force = true;
+        in
         {
-          home-manager.users =
-            let
-              inherit (config.icedos.desktop) users;
-              inherit (lib) mapAttrs;
-              force = true;
-            in
-            mapAttrs (user: _: {
-              home.file =
-                let
-                  inherit (config.icedos.desktop.cosmic.accessibility) monoSound;
-                in
-                {
-                  ".config/cosmic/com.system76.CosmicSettingsDaemon/v1/mono_sound" = {
-                    inherit force;
-                    text = if monoSound then "true" else "false";
-                  };
+          home-manager.sharedModules = [
+            {
+              home.file = {
+                ".config/cosmic/com.system76.CosmicSettingsDaemon/v1/mono_sound" = {
+                  inherit force;
+                  text = if monoSound then "true" else "false";
                 };
-            }) users;
+              };
+            }
+          ];
         }
       )
     ];

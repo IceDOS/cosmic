@@ -29,42 +29,41 @@
         }:
 
         let
-          inherit (lib) mapAttrs isBool;
-          inherit (config.icedos) desktop users;
+          inherit (lib) isBool;
+          inherit (config.icedos.desktop.cosmic.x11)
+            globalShortcuts
+            mouseEvents
+            scaling
+            ;
         in
         {
-          home-manager.users = mapAttrs (
-            user: _:
-            let
-              inherit (desktop.cosmic.x11)
-                globalShortcuts
-                mouseEvents
-                scaling
-                ;
+          home-manager.sharedModules = [
+            (
+              { config, ... }:
+              let
+                inherit (config.lib.cosmic) mkRON;
+                force = true;
+              in
+              {
+                home.file = {
+                  ".config/cosmic/com.system76.CosmicComp/v1/xwayland_eavesdropping" = {
+                    inherit force;
 
-              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-
-              force = true;
-            in
-            {
-              home.file = {
-                ".config/cosmic/com.system76.CosmicComp/v1/xwayland_eavesdropping" = {
-                  inherit force;
-
-                  text = ''
-                    (
-                        keyboard: ${if globalShortcuts == "None" then "r#None" else globalShortcuts},
-                        pointer: ${if mouseEvents then "true" else "false"},
-                    )
-                  '';
+                    text = ''
+                      (
+                          keyboard: ${if globalShortcuts == "None" then "r#None" else globalShortcuts},
+                          pointer: ${if mouseEvents then "true" else "false"},
+                      )
+                    '';
+                  };
                 };
-              };
 
-              wayland.desktopManager.cosmic.compositor = {
-                descale_xwayland = if (isBool scaling) then scaling else mkRON "raw" scaling;
-              };
-            }
-          ) users;
+                wayland.desktopManager.cosmic.compositor = {
+                  descale_xwayland = if (isBool scaling) then scaling else mkRON "raw" scaling;
+                };
+              }
+            )
+          ];
         }
       )
     ];

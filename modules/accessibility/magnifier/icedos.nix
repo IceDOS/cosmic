@@ -37,28 +37,24 @@
       (
         {
           config,
-          lib,
           ...
         }:
 
+        let
+          inherit (config.icedos.desktop.cosmic.accessibility.magnifier)
+            mouseZoomShortcuts
+            moveZoom
+            overlay
+            startOnLogin
+            zoomPercentage
+            ;
+        in
         {
-          home-manager.users =
-            let
-              inherit (config.icedos.desktop) users;
-              inherit (lib) mapAttrs;
-            in
-            mapAttrs (
-              user: _:
+          home-manager.sharedModules = [
+            (
+              { config, ... }:
               let
-                inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-
-                inherit (config.icedos.desktop.cosmic.accessibility.magnifier)
-                  mouseZoomShortcuts
-                  moveZoom
-                  overlay
-                  startOnLogin
-                  zoomPercentage
-                  ;
+                inherit (config.lib.cosmic) mkRON;
               in
               {
                 wayland.desktopManager.cosmic.compositor.accessibility_zoom = {
@@ -69,7 +65,8 @@
                   start_on_login = startOnLogin;
                 };
               }
-            ) users;
+            )
+          ];
         }
       )
     ];

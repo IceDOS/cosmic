@@ -63,10 +63,9 @@
           ...
         }:
         let
-          inherit (config.icedos) desktop users;
-          inherit (lib) mapAttrs mkIf length;
-          inherit (desktop) cosmic;
+          inherit (config.icedos.desktop) cosmic;
           inherit (cosmic) panel;
+          inherit (lib) mkIf length;
 
           inherit (panel)
             autohide
@@ -83,87 +82,89 @@
           inherit (plugins) center left right;
         in
         {
-          home-manager.users = mapAttrs (
-            user: _:
-            let
-              inherit (cosmic) users;
-              inherit (users.${user}) panelFavorites;
-              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-            in
-            {
-              wayland.desktopManager.cosmic.panels = [
-                {
-                  name = "Panel";
-                  anchor = mkRON "enum" position;
-                  anchor_gap = gaps;
+          home-manager.sharedModules = [
+            (
+              { config, ... }:
 
-                  autohide =
-                    if autohide then
-                      mkRON "optional" {
-                        wait_time = 1000;
-                        transition_time = 200;
-                        handle_size = 4;
-                        unhide_delay = 200;
-                      }
-                    else
-                      {
-                        __type = "optional";
-                        value = null;
-                      };
+              let
+                inherit (cosmic.users.${config.home.username}) panelFavorites;
+                inherit (config.lib.cosmic) mkRON;
+              in
+              {
+                wayland.desktopManager.cosmic.panels = [
+                  {
+                    name = "Panel";
+                    anchor = mkRON "enum" position;
+                    anchor_gap = gaps;
 
-                  background = mkRON "enum" themeMode;
-                  exclusive_zone = !autohide;
-                  expand_to_edges = expand;
-                  keyboard_interactivity = mkRON "enum" "OnDemand";
-                  layer = mkRON "enum" "Top";
-                  margin = 0;
-                  opacity = opacity / 100.0;
+                    autohide =
+                      if autohide then
+                        mkRON "optional" {
+                          wait_time = 1000;
+                          transition_time = 200;
+                          handle_size = 4;
+                          unhide_delay = 200;
+                        }
+                      else
+                        {
+                          __type = "optional";
+                          value = null;
+                        };
 
-                  output =
-                    if (monitor == "") then
-                      mkRON "enum" "All"
-                    else
-                      {
-                        __type = "enum";
-                        variant = "Name";
-                        value = [ monitor ];
-                      };
+                    background = mkRON "enum" themeMode;
+                    exclusive_zone = !autohide;
+                    expand_to_edges = expand;
+                    keyboard_interactivity = mkRON "enum" "OnDemand";
+                    layer = mkRON "enum" "Top";
+                    margin = 0;
+                    opacity = opacity / 100.0;
 
-                  padding = 0;
+                    output =
+                      if (monitor == "") then
+                        mkRON "enum" "All"
+                      else
+                        {
+                          __type = "enum";
+                          variant = "Name";
+                          value = [ monitor ];
+                        };
 
-                  plugins_center = mkRON "optional" center;
+                    padding = 0;
 
-                  plugins_wings = mkRON "optional" (
-                    mkRON "tuple" [
-                      left
-                      right
-                    ]
-                  );
+                    plugins_center = mkRON "optional" center;
 
-                  size = mkRON "enum" size;
-                  spacing = 0;
-                  border_radius = 0;
+                    plugins_wings = mkRON "optional" (
+                      mkRON "tuple" [
+                        left
+                        right
+                      ]
+                    );
 
-                  size_wings = {
-                    __type = "optional";
-                    value = null;
-                  };
+                    size = mkRON "enum" size;
+                    spacing = 0;
+                    border_radius = 0;
 
-                  size_center = {
-                    __type = "optional";
-                    value = null;
-                  };
+                    size_wings = {
+                      __type = "optional";
+                      value = null;
+                    };
 
-                  autohover_delay_ms = mkRON "optional" 500;
-                  padding_overlap = 0.5;
-                }
-              ];
+                    size_center = {
+                      __type = "optional";
+                      value = null;
+                    };
 
-              wayland.desktopManager.cosmic.applets.app-list.settings.favorites = mkIf (
-                (length panelFavorites) > 0
-              ) panelFavorites;
-            }
-          ) users;
+                    autohover_delay_ms = mkRON "optional" 500;
+                    padding_overlap = 0.5;
+                  }
+                ];
+
+                wayland.desktopManager.cosmic.applets.app-list.settings.favorites = mkIf (
+                  (length panelFavorites) > 0
+                ) panelFavorites;
+              }
+            )
+          ];
         }
       )
     ];

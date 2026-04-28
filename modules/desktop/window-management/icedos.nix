@@ -70,10 +70,7 @@
           ...
         }:
         let
-          inherit (config.icedos) desktop users;
-          inherit (desktop) cosmic;
-
-          inherit (cosmic.windowManagement)
+          inherit (config.icedos.desktop.cosmic.windowManagement)
             cli
             controls
             focus
@@ -92,34 +89,36 @@
             followsCursorDelay
             ;
 
-          inherit (lib) mapAttrs mkIf;
+          inherit (lib) mkIf;
           inherit (pkgs) callPackage;
         in
         {
           environment.systemPackages = mkIf cli [ (callPackage ./cos-cli/package.nix { }) ];
 
-          home-manager.users = mapAttrs (user: _: {
-            wayland.desktopManager.cosmic = {
-              appearance.toolkit = {
-                show_maximize = maximize;
-                show_minimize = minimize;
+          home-manager.sharedModules = [
+            {
+              wayland.desktopManager.cosmic = {
+                appearance.toolkit = {
+                  show_maximize = maximize;
+                  show_minimize = minimize;
+                };
+
+                compositor = {
+                  active_hint = activeHint;
+                  cursor_follows_focus = cursorFollowsFocus;
+
+                  edge_snap_threshold =
+                    let
+                      inherit (snapWindowsToEdges) enable threshold;
+                    in
+                    if enable then threshold else 0;
+
+                  focus_follows_cursor = followsCursor;
+                  focus_follows_cursor_delay = followsCursorDelay;
+                };
               };
-
-              compositor = {
-                active_hint = activeHint;
-                cursor_follows_focus = cursorFollowsFocus;
-
-                edge_snap_threshold =
-                  let
-                    inherit (snapWindowsToEdges) enable threshold;
-                  in
-                  if enable then threshold else 0;
-
-                focus_follows_cursor = followsCursor;
-                focus_follows_cursor_delay = followsCursorDelay;
-              };
-            };
-          }) users;
+            }
+          ];
         }
       )
     ];

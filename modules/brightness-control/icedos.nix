@@ -20,11 +20,9 @@
 
         let
           inherit (config.icedos.desktop.cosmic.brightnessControl) schedules;
-          inherit (config.icedos) users;
           inherit (lib)
             concatStringsSep
             getExe
-            mapAttrs
             sort
             ;
 
@@ -91,49 +89,51 @@
           '';
         in
         {
-          home-manager.users = mapAttrs (user: _: {
-            systemd.user.services.wl-gammarelay-rs = {
-              Unit = {
-                Description = "wl-gammarelay-rs - Wayland gamma relay daemon";
-                After = [
-                  "cosmic-session.target"
-                  "graphical-session.target"
-                ];
-                PartOf = "graphical-session.target";
+          home-manager.sharedModules = [
+            {
+              systemd.user.services.wl-gammarelay-rs = {
+                Unit = {
+                  Description = "wl-gammarelay-rs - Wayland gamma relay daemon";
+                  After = [
+                    "cosmic-session.target"
+                    "graphical-session.target"
+                  ];
+                  PartOf = "graphical-session.target";
+                };
+
+                Install.WantedBy = [ "cosmic-session.target" ];
+
+                Service = {
+                  ExecStart = "${getExe pkgs.wl-gammarelay-rs} run";
+                  Restart = "on-failure";
+                  RestartSec = 3;
+                };
               };
 
-              Install.WantedBy = [ "cosmic-session.target" ];
+              systemd.user.services.cosmic-brightness-scheduler = {
+                Unit = {
+                  Description = "Scheduled brightness control for COSMIC";
 
-              Service = {
-                ExecStart = "${getExe pkgs.wl-gammarelay-rs} run";
-                Restart = "on-failure";
-                RestartSec = 3;
+                  After = [
+                    "cosmic-session.target"
+                    "graphical-session.target"
+                    "wl-gammarelay-rs.service"
+                  ];
+
+                  Requires = [ "wl-gammarelay-rs.service" ];
+                  PartOf = "graphical-session.target";
+                };
+
+                Install.WantedBy = [ "cosmic-session.target" ];
+
+                Service = {
+                  ExecStart = "${schedulerScript}/bin/cosmic-brightness-scheduler";
+                  Restart = "on-failure";
+                  RestartSec = 5;
+                };
               };
-            };
-
-            systemd.user.services.cosmic-brightness-scheduler = {
-              Unit = {
-                Description = "Scheduled brightness control for COSMIC";
-
-                After = [
-                  "cosmic-session.target"
-                  "graphical-session.target"
-                  "wl-gammarelay-rs.service"
-                ];
-
-                Requires = [ "wl-gammarelay-rs.service" ];
-                PartOf = "graphical-session.target";
-              };
-
-              Install.WantedBy = [ "cosmic-session.target" ];
-
-              Service = {
-                ExecStart = "${schedulerScript}/bin/cosmic-brightness-scheduler";
-                Restart = "on-failure";
-                RestartSec = 5;
-              };
-            };
-          }) users;
+            }
+          ];
 
           nixpkgs.overlays = [
             (final: prev: {

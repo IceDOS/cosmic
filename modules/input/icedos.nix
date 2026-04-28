@@ -161,10 +161,9 @@
         }:
 
         {
-          home-manager.users =
+          home-manager.sharedModules =
             let
-              inherit (config.icedos) desktop users;
-              inherit (desktop.cosmic.input) keyboard mouse;
+              inherit (config.icedos.desktop.cosmic.input) keyboard mouse;
 
               inherit (keyboard)
                 alternateCharactersKey
@@ -186,141 +185,143 @@
                 scrollingSpeed
                 ;
 
-              inherit (lib) flatten mapAttrs;
+              inherit (lib) flatten;
               inherit (import ../../lib.nix { inherit lib; }) mouseSpeedToCosmicSpeed pow2;
 
               mouseSpeedValue = mouseSpeedToCosmicSpeed mouseSpeed;
               scrollFactorValue = pow2 ((0.1 * scrollingSpeed) - 5.0);
             in
-            mapAttrs (
-              user: _:
-              let
-                inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-              in
-              {
-                wayland.desktopManager.cosmic = {
-                  compositor = {
-                    input_default = {
-                      state = mkRON "enum" "Enabled";
+            [
+              (
+                { config, ... }:
+                let
+                  inherit (config.lib.cosmic) mkRON;
+                in
+                {
+                  wayland.desktopManager.cosmic = {
+                    compositor = {
+                      input_default = {
+                        state = mkRON "enum" "Enabled";
 
-                      acceleration = mkRON "optional" {
-                        profile = mkRON "optional" (mkRON "enum" (if acceleration then "Adaptive" else "Flat"));
-                        speed = mkRON "raw" (toString mouseSpeedValue);
-                      };
-
-                      left_handed = mkRON "optional" primaryButtonRight;
-
-                      scroll_config = mkRON "optional" {
-                        method = {
-                          __type = "optional";
-                          value = null;
+                        acceleration = mkRON "optional" {
+                          profile = mkRON "optional" (mkRON "enum" (if acceleration then "Adaptive" else "Flat"));
+                          speed = mkRON "raw" (toString mouseSpeedValue);
                         };
 
-                        natural_scroll = mkRON "optional" naturalScrolling;
+                        left_handed = mkRON "optional" primaryButtonRight;
 
-                        scroll_button = {
-                          __type = "optional";
-                          value = null;
+                        scroll_config = mkRON "optional" {
+                          method = {
+                            __type = "optional";
+                            value = null;
+                          };
+
+                          natural_scroll = mkRON "optional" naturalScrolling;
+
+                          scroll_button = {
+                            __type = "optional";
+                            value = null;
+                          };
+
+                          scroll_factor = mkRON "optional" scrollFactorValue;
                         };
-
-                        scroll_factor = mkRON "optional" scrollFactorValue;
                       };
-                    };
 
-                    keyboard_config = {
-                      numlock_state = mkRON "enum" numlock;
-                    };
+                      keyboard_config = {
+                        numlock_state = mkRON "enum" numlock;
+                      };
 
-                    xkb_config = {
-                      layout = keyboardLayouts;
+                      xkb_config = {
+                        layout = keyboardLayouts;
 
-                      model = "pc104";
-                      rules = "";
-                      variant = ",";
+                        model = "pc104";
+                        rules = "";
+                        variant = ",";
 
-                      options = mkRON "optional" "
+                        options = mkRON "optional" "
                         terminate:ctrl_alt_bksp
                         ${
-                                                if alternateCharactersKey != "" then ",lv3:${alternateCharactersKey}_switch" else ""
-                                              }
+                                                  if alternateCharactersKey != "" then ",lv3:${alternateCharactersKey}_switch" else ""
+                                                }
                         ${
-                                                if capsLockKey != "" then ",caps:${capsLockKey}" else ""
-                                              }
+                                                  if capsLockKey != "" then ",caps:${capsLockKey}" else ""
+                                                }
                         ${if composeKey != "" then ",compose:${composeKey}" else ""}";
 
-                      repeat_delay = repeatDelay;
-                      repeat_rate = repeatRate;
+                        repeat_delay = repeatDelay;
+                        repeat_rate = repeatRate;
+                      };
                     };
+
+                    shortcuts = (
+                      let
+                        superKeyShortcut = {
+                          action = superKeyAction;
+                          command = "";
+                          description = "";
+                          keys = [ "Super" ];
+                        }
+                        // (if (superKeyAction != "Disable") then { variant = "System"; } else { variant = ""; });
+                      in
+                      flatten (
+                        map (
+                          shortcut:
+                          let
+                            inherit (shortcut)
+                              command
+                              description
+                              keys
+                              variant
+                              ;
+
+                            shortcutAction = shortcut.action;
+
+                            generateShortcut =
+                              key:
+                              if (variant == "System" && key != "" && shortcutAction != "") then
+                                {
+                                  inherit key;
+
+                                  action = mkRON "enum" {
+                                    inherit variant;
+
+                                    value = [
+                                      (mkRON "enum" shortcutAction)
+                                    ];
+                                  };
+                                }
+                              else if (command != "" && variant != "" && key != "") then
+                                {
+                                  inherit key;
+
+                                  action = mkRON "enum" {
+                                    inherit variant;
+
+                                    value = [
+                                      command
+                                    ];
+                                  };
+
+                                  description = mkRON "optional" description;
+                                }
+                              else if (shortcutAction != "" && key != "") then
+                                {
+                                  inherit key;
+                                  action = mkRON "enum" shortcutAction;
+                                }
+                              else
+                                { };
+
+                            generatedShortcutsFromKeys = map (key: generateShortcut key) keys;
+                          in
+                          generatedShortcutsFromKeys
+                        ) (shortcuts ++ [ superKeyShortcut ])
+                      )
+                    );
                   };
-
-                  shortcuts = (
-                    let
-                      superKeyShortcut = {
-                        action = superKeyAction;
-                        command = "";
-                        description = "";
-                        keys = [ "Super" ];
-                      }
-                      // (if (superKeyAction != "Disable") then { variant = "System"; } else { variant = ""; });
-                    in
-                    flatten (
-                      map (
-                        shortcut:
-                        let
-                          inherit (shortcut)
-                            command
-                            description
-                            keys
-                            variant
-                            ;
-
-                          shortcutAction = shortcut.action;
-
-                          generateShortcut =
-                            key:
-                            if (variant == "System" && key != "" && shortcutAction != "") then
-                              {
-                                inherit key;
-
-                                action = mkRON "enum" {
-                                  inherit variant;
-
-                                  value = [
-                                    (mkRON "enum" shortcutAction)
-                                  ];
-                                };
-                              }
-                            else if (command != "" && variant != "" && key != "") then
-                              {
-                                inherit key;
-
-                                action = mkRON "enum" {
-                                  inherit variant;
-
-                                  value = [
-                                    command
-                                  ];
-                                };
-
-                                description = mkRON "optional" description;
-                              }
-                            else if (shortcutAction != "" && key != "") then
-                              {
-                                inherit key;
-                                action = mkRON "enum" shortcutAction;
-                              }
-                            else
-                              { };
-
-                          generatedShortcutsFromKeys = map (key: generateShortcut key) keys;
-                        in
-                        generatedShortcutsFromKeys
-                      ) (shortcuts ++ [ superKeyShortcut ])
-                    )
-                  );
-                };
-              }
-            ) users;
+                }
+              )
+            ];
         }
       )
     ];

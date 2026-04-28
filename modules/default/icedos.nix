@@ -95,28 +95,17 @@
         }
       )
 
-      (
-        {
-          config,
-          lib,
-          ...
-        }:
-
-        let
-          inherit (lib) mapAttrs;
-          inherit (config.icedos) users;
-        in
-
-        {
-          home-manager.users = mapAttrs (user: _: {
+      {
+        home-manager.sharedModules = [
+          {
             imports = [
               inputs.cosmic-manager.homeManagerModules.cosmic-manager
             ];
 
             wayland.desktopManager.cosmic.enable = true;
-          }) users;
-        }
-      )
+          }
+        ];
+      }
     ];
 
   meta = {

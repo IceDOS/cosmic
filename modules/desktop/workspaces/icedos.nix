@@ -36,38 +36,33 @@
       (
         {
           config,
-          icedosLib,
-          lib,
           ...
         }:
         let
-          inherit (config.icedos) desktop users;
-          inherit (desktop) cosmic;
-
-          inherit (cosmic.workspaces)
+          inherit (config.icedos.desktop.cosmic.workspaces)
             orientation
             perScreen
             tile
             ;
-
-          inherit (lib) mapAttrs;
         in
         {
-          home-manager.users = mapAttrs (
-            user: _:
-            let
-              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-            in
-            {
-              wayland.desktopManager.cosmic.compositor = {
-                autotile = tile;
-                workspaces = {
-                  workspace_layout = mkRON "enum" orientation;
-                  workspace_mode = mkRON "enum" (if perScreen then "OutputBound" else "Global");
+          home-manager.sharedModules = [
+            (
+              { config, ... }:
+              let
+                inherit (config.lib.cosmic) mkRON;
+              in
+              {
+                wayland.desktopManager.cosmic.compositor = {
+                  autotile = tile;
+                  workspaces = {
+                    workspace_layout = mkRON "enum" orientation;
+                    workspace_mode = mkRON "enum" (if perScreen then "OutputBound" else "Global");
+                  };
                 };
-              };
-            }
-          ) users;
+              }
+            )
+          ];
         }
       )
     ];

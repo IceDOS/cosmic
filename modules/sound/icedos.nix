@@ -29,40 +29,38 @@
       (
         {
           config,
-          lib,
           ...
         }:
-        let
-          inherit (config.icedos) desktop users;
-          inherit (desktop) cosmic;
 
-          inherit (cosmic.sound)
+        let
+          inherit (config.icedos.desktop.cosmic.sound)
             outputAmplification
             inputAmplification
             showMediaControlsInPanel
             ;
 
-          inherit (lib) mapAttrs;
           force = true;
         in
         {
-          home-manager.users = mapAttrs (user: _: {
-            home.file = {
-              ".config/cosmic/com.system76.CosmicAudio/v1/amplification_source" = {
-                inherit force;
-                text = if inputAmplification then "true" else "false";
+          home-manager.sharedModules = [
+            {
+              home.file = {
+                ".config/cosmic/com.system76.CosmicAudio/v1/amplification_source" = {
+                  inherit force;
+                  text = if inputAmplification then "true" else "false";
+                };
+
+                ".config/cosmic/com.system76.CosmicAudio/v1/amplification_sink" = {
+                  inherit force;
+                  text = if outputAmplification then "true" else "false";
+                };
               };
 
-              ".config/cosmic/com.system76.CosmicAudio/v1/amplification_sink" = {
-                inherit force;
-                text = if outputAmplification then "true" else "false";
+              wayland.desktopManager.cosmic.applets.audio.settings = {
+                show_media_controls_in_top_panel = showMediaControlsInPanel;
               };
-            };
-
-            wayland.desktopManager.cosmic.applets.audio.settings = {
-              show_media_controls_in_top_panel = showMediaControlsInPanel;
-            };
-          }) users;
+            }
+          ];
         }
       )
     ];

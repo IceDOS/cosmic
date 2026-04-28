@@ -31,7 +31,6 @@
             concatStringsSep
             getExe
             getExe'
-            mapAttrs
             mkIf
             optional
             ;
@@ -87,69 +86,72 @@
           '';
         in
         {
-          home-manager.users = mapAttrs (
-            user: _:
-            let
-              inherit (config.home-manager.users.${user}.lib.cosmic) mkRON;
-              inherit (users.${user}.idle) disableMonitors suspend;
+          home-manager.sharedModules = [
+            (
+              { config, ... }:
+              let
+                user = config.home.username;
+                inherit (config.lib.cosmic) mkRON;
+                inherit (users.${user}.idle) disableMonitors suspend;
 
-              suspendSeconds = mkRON "raw" (
-                if (suspend.enable) then "Some(${toString (suspend.seconds * 1000)})" else "None"
-              );
-            in
-            {
-              wayland.desktopManager.cosmic.idle = {
-                screen_off_time = mkRON "raw" "None";
-                suspend_on_ac_time = suspendSeconds;
-                suspend_on_battery_time = suspendSeconds;
-              };
+                suspendSeconds = mkRON "raw" (
+                  if (suspend.enable) then "Some(${toString (suspend.seconds * 1000)})" else "None"
+                );
+              in
+              {
+                wayland.desktopManager.cosmic.idle = {
+                  screen_off_time = mkRON "raw" "None";
+                  suspend_on_ac_time = suspendSeconds;
+                  suspend_on_battery_time = suspendSeconds;
+                };
 
-              systemd.user.services.cosmic-idle =
-                mkIf (users.${user}.idle.lock.enable || disableMonitors.enable)
-                  {
-                    Unit = {
-                      Description = "Idle manager (swayidle) for COSMIC session";
+                systemd.user.services.cosmic-idle =
+                  mkIf (users.${user}.idle.lock.enable || disableMonitors.enable)
+                    {
+                      Unit = {
+                        Description = "Idle manager (swayidle) for COSMIC session";
 
-                      After = [
-                        "cosmic-session.target"
-                        "graphical-session.target"
-                      ];
+                        After = [
+                          "cosmic-session.target"
+                          "graphical-session.target"
+                        ];
 
-                      PartOf = "graphical-session.target";
+                        PartOf = "graphical-session.target";
+                      };
+
+                      Install.WantedBy = [ "cosmic-session.target" ];
+
+                      Service = {
+                        ExecStart = "${mkIdleScript user}/bin/cosmic-idle";
+                        Restart = "on-failure";
+                        RestartSec = 3;
+                      };
                     };
 
-                    Install.WantedBy = [ "cosmic-session.target" ];
+                systemd.user.services.cosmic-gamepad-idle =
+                  mkIf (users.${user}.idle.lock.enable || disableMonitors.enable)
+                    {
+                      Unit = {
+                        Description = "Gamepad idle inhibitor (wljoywake) for COSMIC session";
+                        After = [
+                          "cosmic-session.target"
+                          "graphical-session.target"
+                        ];
 
-                    Service = {
-                      ExecStart = "${mkIdleScript user}/bin/cosmic-idle";
-                      Restart = "on-failure";
-                      RestartSec = 3;
+                        PartOf = "graphical-session.target";
+                      };
+
+                      Install.WantedBy = [ "cosmic-session.target" ];
+
+                      Service = {
+                        ExecStart = "${gamepadIdleScript}/bin/cosmic-gamepad-idle";
+                        Restart = "on-failure";
+                        RestartSec = 3;
+                      };
                     };
-                  };
-
-              systemd.user.services.cosmic-gamepad-idle =
-                mkIf (users.${user}.idle.lock.enable || disableMonitors.enable)
-                  {
-                    Unit = {
-                      Description = "Gamepad idle inhibitor (wljoywake) for COSMIC session";
-                      After = [
-                        "cosmic-session.target"
-                        "graphical-session.target"
-                      ];
-
-                      PartOf = "graphical-session.target";
-                    };
-
-                    Install.WantedBy = [ "cosmic-session.target" ];
-
-                    Service = {
-                      ExecStart = "${gamepadIdleScript}/bin/cosmic-gamepad-idle";
-                      Restart = "on-failure";
-                      RestartSec = 3;
-                    };
-                  };
-            }
-          ) users;
+              }
+            )
+          ];
 
           systemd.services.cosmic-greeter-idle = {
             bindsTo = [ "cosmic-greeter.service" ];

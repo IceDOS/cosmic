@@ -37,14 +37,10 @@
       (
         {
           config,
-          lib,
           ...
         }:
         let
-          inherit (config.icedos) desktop users;
-          inherit (desktop) cosmic;
-
-          inherit (cosmic.applications.cosmicFiles)
+          inherit (config.icedos.desktop.cosmic.applications.cosmicFiles)
             details
             hidden
             foldersFirst
@@ -52,45 +48,46 @@
             view
             ;
 
-          inherit (lib) mapAttrs;
           force = true;
         in
         {
-          home-manager.users = mapAttrs (user: _: {
-            home.file = {
-              ".config/cosmic/com.system76.CosmicFiles/v1/dialog" = {
-                inherit force;
-                text = ''
-                  (
-                      folders_first: ${if foldersFirst then "true" else "false"},
-                      icon_sizes: (
-                          list: ${toString iconSize},
-                          grid: ${toString iconSize},
-                      ),
-                      show_details: ${if details then "true" else "false"},
-                      show_hidden: ${if hidden then "true" else "false"},
-                      view: ${view},
-                  )
-                '';
-              };
+          home-manager.sharedModules = [
+            {
+              home.file = {
+                ".config/cosmic/com.system76.CosmicFiles/v1/dialog" = {
+                  inherit force;
+                  text = ''
+                    (
+                        folders_first: ${if foldersFirst then "true" else "false"},
+                        icon_sizes: (
+                            list: ${toString iconSize},
+                            grid: ${toString iconSize},
+                        ),
+                        show_details: ${if details then "true" else "false"},
+                        show_hidden: ${if hidden then "true" else "false"},
+                        view: ${view},
+                    )
+                  '';
+                };
 
-              ".config/cosmic/com.system76.CosmicFiles/v1/tab" = {
-                inherit force;
-                text = ''
-                  (
-                      folders_first: ${if foldersFirst then "true" else "false"},
-                      icon_sizes: (
-                          list: ${toString iconSize},
-                          grid: ${toString iconSize},
-                      ),
-                      show_hidden: ${if hidden then "true" else "false"},
-                      single_click: false,
-                      view: ${view},
-                  )
-                '';
+                ".config/cosmic/com.system76.CosmicFiles/v1/tab" = {
+                  inherit force;
+                  text = ''
+                    (
+                        folders_first: ${if foldersFirst then "true" else "false"},
+                        icon_sizes: (
+                            list: ${toString iconSize},
+                            grid: ${toString iconSize},
+                        ),
+                        show_hidden: ${if hidden then "true" else "false"},
+                        single_click: false,
+                        view: ${view},
+                    )
+                  '';
+                };
               };
-            };
-          }) users;
+            }
+          ];
         }
       )
     ];
