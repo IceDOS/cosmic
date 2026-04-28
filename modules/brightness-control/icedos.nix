@@ -20,25 +20,29 @@
 
         let
           inherit (config.icedos.desktop.cosmic.brightnessControl) schedules;
+
           inherit (lib)
             concatStringsSep
             getExe
+            imap0
             sort
+            splitString
+            toIntBase10
             ;
 
           parseTime =
             s:
             let
-              parts = lib.splitString ":" s;
-              h = lib.toIntBase10 (builtins.elemAt parts 0);
-              m = lib.toIntBase10 (builtins.elemAt parts 1);
+              parts = splitString ":" s;
+              h = toIntBase10 (builtins.elemAt parts 0);
+              m = toIntBase10 (builtins.elemAt parts 1);
             in
             h * 60 + m;
 
           sorted = sort (a: b: parseTime a.at < parseTime b.at) schedules;
 
           parsedSchedules = concatStringsSep "\n" (
-            lib.imap0 (
+            imap0 (
               i: entry:
               let
                 brightness = toString (entry.brightness / 100.0);

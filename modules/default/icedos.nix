@@ -52,11 +52,12 @@
 
           checkIfPluginsExists = plugin: elem plugin allPlugins;
 
-          inherit (icedosLib) genUserDefaults pkgMapper;
+          inherit (icedosLib.pkgs) mapper;
+          inherit (icedosLib.users) genDefaults;
           inherit (lib) elem optional;
         in
         {
-          icedos.desktop.cosmic.users = genUserDefaults {
+          icedos.desktop.cosmic.users = genDefaults {
             users = config.icedos.users;
           };
 
@@ -79,7 +80,7 @@
               cosmic-store
               cosmic-term
             ]
-            ++ (pkgMapper pkgs excludeDefaultPackages);
+            ++ (mapper pkgs excludeDefaultPackages);
 
           services.desktopManager.cosmic = {
             enable = true;
