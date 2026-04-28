@@ -52,10 +52,14 @@
 
           checkIfPluginsExists = plugin: elem plugin allPlugins;
 
-          inherit (icedosLib) pkgMapper;
+          inherit (icedosLib) genUserDefaults pkgMapper;
           inherit (lib) elem optional;
         in
         {
+          icedos.desktop.cosmic.users = genUserDefaults {
+            users = config.icedos.users;
+          };
+
           environment.systemPackages =
             with pkgs;
             [
