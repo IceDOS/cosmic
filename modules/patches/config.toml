@@ -12,6 +12,7 @@ windowMatchingRoundness = false
 
 [icedos.desktop.cosmic.patches.cosmic-osd]
 keyboardLayoutOsd = false
+osdTimeoutMs = 3000
 
 [icedos.desktop.cosmic.patches.cosmic-panel.autohide]
 alwaysHide = false

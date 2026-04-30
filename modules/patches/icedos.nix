@@ -3,7 +3,7 @@
 {
   options.icedos.desktop.cosmic.patches =
     let
-      inherit (icedosLib) mkBoolOption;
+      inherit (icedosLib) mkBoolOption mkNumberOption;
       inherit (lib) readFile;
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.patches)
@@ -25,7 +25,7 @@
         ;
 
       inherit (cosmic-notifications) windowMatchingRoundness;
-      inherit (cosmic-osd) keyboardLayoutOsd;
+      inherit (cosmic-osd) keyboardLayoutOsd osdTimeoutMs;
       inherit (cosmic-panel.autohide) alwaysHide;
       inherit (pop-gtk-theme) skipInkscape;
       inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
@@ -42,7 +42,12 @@
         steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
       };
       cosmic-notifications.windowMatchingRoundness = mkBoolOption { default = windowMatchingRoundness; };
-      cosmic-osd.keyboardLayoutOsd = mkBoolOption { default = keyboardLayoutOsd; };
+
+      cosmic-osd = {
+        keyboardLayoutOsd = mkBoolOption { default = keyboardLayoutOsd; };
+        osdTimeoutMs = mkNumberOption { default = osdTimeoutMs; };
+      };
+
       cosmic-panel.autohide.alwaysHide = mkBoolOption { default = alwaysHide; };
       pop-gtk-theme.skipInkscape = mkBoolOption { default = skipInkscape; };
 
@@ -70,7 +75,7 @@
           inherit (cosmic-applets) notificationHtmlMarkup steamGameIconMatcher;
           inherit (cosmic-comp) dmemForegroundBooster fixTilingHintClipping perWindowKeyboardLayout;
           inherit (cosmic-notifications) windowMatchingRoundness;
-          inherit (cosmic-osd) keyboardLayoutOsd;
+          inherit (cosmic-osd) keyboardLayoutOsd osdTimeoutMs;
           inherit (cosmic-panel.autohide) alwaysHide;
           inherit (pop-gtk-theme) skipInkscape;
           inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
@@ -149,6 +154,20 @@
                     patches = (old.patches or [ ]) ++ [
                       ./cosmic-settings-daemon/keyboard-layout-osd.patch
                     ];
+                  });
+                }
+              )
+              ++ optional (osdTimeoutMs != 3000) (
+                final: prev: {
+                  cosmic-osd = prev.cosmic-osd.overrideAttrs (old: {
+                    inherit doCheck;
+
+                    postPatch = (old.postPatch or "") + ''
+                      substituteInPlace src/components/osd_indicator.rs \
+                        --replace-fail \
+                        'Duration::from_secs(3)' \
+                        'Duration::from_millis(${toString osdTimeoutMs})'
+                    '';
                   });
                 }
               )
