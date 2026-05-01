@@ -1,5 +1,6 @@
 [icedos.desktop.cosmic.patches.cosmic-applets]
 notificationHtmlMarkup = false
+stableClockWidth = false
 steamGameIconMatcher = false
 
 [icedos.desktop.cosmic.patches.cosmic-comp]

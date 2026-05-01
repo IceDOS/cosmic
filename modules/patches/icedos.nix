@@ -16,7 +16,7 @@
         xdg-desktop-portal-cosmic
         ;
 
-      inherit (cosmic-applets) notificationHtmlMarkup steamGameIconMatcher;
+      inherit (cosmic-applets) notificationHtmlMarkup stableClockWidth steamGameIconMatcher;
 
       inherit (cosmic-comp)
         dmemForegroundBooster
@@ -39,6 +39,7 @@
 
       cosmic-applets = {
         notificationHtmlMarkup = mkBoolOption { default = notificationHtmlMarkup; };
+        stableClockWidth = mkBoolOption { default = stableClockWidth; };
         steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
       };
       cosmic-notifications.windowMatchingRoundness = mkBoolOption { default = windowMatchingRoundness; };
@@ -72,7 +73,7 @@
             xdg-desktop-portal-cosmic
             ;
 
-          inherit (cosmic-applets) notificationHtmlMarkup steamGameIconMatcher;
+          inherit (cosmic-applets) notificationHtmlMarkup stableClockWidth steamGameIconMatcher;
           inherit (cosmic-comp) dmemForegroundBooster fixTilingHintClipping perWindowKeyboardLayout;
           inherit (cosmic-notifications) windowMatchingRoundness;
           inherit (cosmic-osd) keyboardLayoutOsd osdTimeoutMs;
@@ -122,21 +123,25 @@
                   });
                 }
               )
-              ++ optional (steamGameIconMatcher || notificationHtmlMarkup || windowMatchingRoundness) (
-                final: prev: {
-                  cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
-                    inherit doCheck;
+              ++
+                optional
+                  (steamGameIconMatcher || notificationHtmlMarkup || windowMatchingRoundness || stableClockWidth)
+                  (
+                    final: prev: {
+                      cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
+                        inherit doCheck;
 
-                    patches =
-                      (old.patches or [ ])
-                      ++ optional steamGameIconMatcher ./cosmic-applets/steam-game-icon-matcher.patch
-                      ++ optional notificationHtmlMarkup ./cosmic-applets/notification-html-markup.patch;
+                        patches =
+                          (old.patches or [ ])
+                          ++ optional steamGameIconMatcher ./cosmic-applets/steam-game-icon-matcher.patch
+                          ++ optional notificationHtmlMarkup ./cosmic-applets/notification-html-markup.patch
+                          ++ optional stableClockWidth ./cosmic-applets/stable-clock-width.patch;
 
-                    postPatch =
-                      (old.postPatch or "") + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
-                  });
-                }
-              )
+                        postPatch =
+                          (old.postPatch or "") + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
+                      });
+                    }
+                  )
               ++ optional keyboardLayoutOsd (
                 final: prev: {
                   cosmic-osd = prev.cosmic-osd.overrideAttrs (old: {
