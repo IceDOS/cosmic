@@ -271,17 +271,11 @@
                     };
                 };
 
-                home.file = {
-                  ".config/cosmic/com.system76.CosmicTheme.Mode/v1/auto_switch" = {
-                    inherit force;
-                    text = if isModeAuto then "true" else "false";
-                  };
-                }
-                // (
-                  # cosmic-manager's configFile mechanism doesn't force-overwrite
-                  # toolkit fonts once a stale value is on disk, so own these two
-                  # files directly via home.file with force = true. Format must
-                  # match exactly what COSMIC reads back as a RON struct.
+                # cosmic-manager's configFile mechanism doesn't force-overwrite
+                # toolkit fonts once a stale value is on disk, so own those two
+                # files directly with force = true. Format must match exactly
+                # what COSMIC reads back as a RON struct.
+                xdg.configFile =
                   let
                     mkFontFile = family: {
                       inherit force;
@@ -295,13 +289,16 @@
                       '';
                     };
                   in
-                  optionalAttrs stylixEnabled {
-                    ".config/cosmic/com.system76.CosmicTk/v1/interface_font" =
-                      mkFontFile osConfig.stylix.fonts.sansSerif.name;
-                    ".config/cosmic/com.system76.CosmicTk/v1/monospace_font" =
-                      mkFontFile osConfig.stylix.fonts.monospace.name;
+                  {
+                    "cosmic/com.system76.CosmicTheme.Mode/v1/auto_switch" = {
+                      inherit force;
+                      text = if isModeAuto then "true" else "false";
+                    };
                   }
-                );
+                  // optionalAttrs stylixEnabled {
+                    "cosmic/com.system76.CosmicTk/v1/interface_font" = mkFontFile osConfig.stylix.fonts.sansSerif.name;
+                    "cosmic/com.system76.CosmicTk/v1/monospace_font" = mkFontFile osConfig.stylix.fonts.monospace.name;
+                  };
               }
             )
           ];

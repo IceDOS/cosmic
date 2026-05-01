@@ -26,11 +26,9 @@
         {
           home-manager.sharedModules = [
             {
-              home.file = {
-                ".config/cosmic/com.system76.CosmicSettingsDaemon/v1/mono_sound" = {
-                  inherit force;
-                  text = if monoSound then "true" else "false";
-                };
+              xdg.configFile."cosmic/com.system76.CosmicSettingsDaemon/v1/mono_sound" = {
+                inherit force;
+                text = if monoSound then "true" else "false";
               };
             }
           ];

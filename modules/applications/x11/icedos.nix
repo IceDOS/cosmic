@@ -45,17 +45,15 @@
                 force = true;
               in
               {
-                home.file = {
-                  ".config/cosmic/com.system76.CosmicComp/v1/xwayland_eavesdropping" = {
-                    inherit force;
+                xdg.configFile."cosmic/com.system76.CosmicComp/v1/xwayland_eavesdropping" = {
+                  inherit force;
 
-                    text = ''
-                      (
-                          keyboard: ${if globalShortcuts == "None" then "r#None" else globalShortcuts},
-                          pointer: ${if mouseEvents then "true" else "false"},
-                      )
-                    '';
-                  };
+                  text = ''
+                    (
+                        keyboard: ${if globalShortcuts == "None" then "r#None" else globalShortcuts},
+                        pointer: ${if mouseEvents then "true" else "false"},
+                    )
+                  '';
                 };
 
                 wayland.desktopManager.cosmic.compositor = {

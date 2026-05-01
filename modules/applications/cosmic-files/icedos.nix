@@ -53,8 +53,8 @@
         {
           home-manager.sharedModules = [
             {
-              home.file = {
-                ".config/cosmic/com.system76.CosmicFiles/v1/dialog" = {
+              xdg.configFile = {
+                "cosmic/com.system76.CosmicFiles/v1/dialog" = {
                   inherit force;
                   text = ''
                     (
@@ -70,7 +70,7 @@
                   '';
                 };
 
-                ".config/cosmic/com.system76.CosmicFiles/v1/tab" = {
+                "cosmic/com.system76.CosmicFiles/v1/tab" = {
                   inherit force;
                   text = ''
                     (
