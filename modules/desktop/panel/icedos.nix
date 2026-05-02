@@ -8,7 +8,7 @@
         mkNumberOption
         mkStrListOption
         mkStrOption
-        mkSubmoduleAttrsOption
+        mkUsersOption
         ;
 
       inherit (lib) readFile;
@@ -48,7 +48,7 @@
         themeMode = mkStrOption { default = themeMode; };
       };
 
-      users = mkSubmoduleAttrsOption { default = { }; } {
+      users = mkUsersOption {
         panelFavorites = mkStrListOption { default = cosmic.users.username.panelFavorites; };
       };
     };
