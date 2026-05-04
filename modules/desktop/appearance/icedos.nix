@@ -8,7 +8,6 @@
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance)
         accentBase16Slot
-        activeHint
         followStylix
         gaps
         gtkTheming
@@ -39,7 +38,6 @@
         '';
       };
 
-      activeHint = mkNumberOption { default = activeHint; };
       followStylix = mkBoolOption { default = followStylix; };
       gaps = mkNumberOption { default = gaps; };
       gtkTheming = mkBoolOption { default = gtkTheming; };
@@ -70,7 +68,6 @@
                 inherit (desktop.cosmic) appearance;
 
                 inherit (appearance)
-                  activeHint
                   followStylix
                   gtkTheming
                   interfaceDensity
@@ -149,7 +146,7 @@
 
                 force = true;
 
-                active_hint = activeHint;
+                active_hint = osConfig.icedos.desktop.windows.activeHintSize;
 
                 gaps = mkRON "tuple" [
                   0

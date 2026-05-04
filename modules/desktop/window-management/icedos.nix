@@ -13,27 +13,12 @@
           (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.windowManagement
         )
         cli
-        controls
         focus
         snapWindowsToEdges
         ;
     in
     {
       cli = mkBoolOption { default = cli; };
-
-      controls =
-        let
-          inherit (controls)
-            activeHint
-            maximize
-            minimize
-            ;
-        in
-        {
-          activeHint = mkBoolOption { default = activeHint; };
-          maximize = mkBoolOption { default = maximize; };
-          minimize = mkBoolOption { default = minimize; };
-        };
 
       focus =
         let
@@ -70,17 +55,11 @@
           ...
         }:
         let
+          inherit (config.icedos.desktop) windows;
           inherit (config.icedos.desktop.cosmic.windowManagement)
             cli
-            controls
             focus
             snapWindowsToEdges
-            ;
-
-          inherit (controls)
-            activeHint
-            maximize
-            minimize
             ;
 
           inherit (focus)
@@ -99,12 +78,12 @@
             {
               wayland.desktopManager.cosmic = {
                 appearance.toolkit = {
-                  show_maximize = maximize;
-                  show_minimize = minimize;
+                  show_maximize = windows.maximizeButton;
+                  show_minimize = windows.minimizeButton;
                 };
 
                 compositor = {
-                  active_hint = activeHint;
+                  active_hint = windows.activeHint;
                   cursor_follows_focus = cursorFollowsFocus;
 
                   edge_snap_threshold =
