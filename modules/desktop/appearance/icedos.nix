@@ -3,8 +3,14 @@
 {
   options.icedos.desktop.cosmic.appearance =
     let
-      inherit (icedosLib) mkBoolOption mkNumberOption mkStrOption;
-      inherit (lib) mkOption types readFile;
+      inherit (icedosLib)
+        mkBoolOption
+        mkEnumOption
+        mkNumberOption
+        mkStrOption
+        ;
+
+      inherit (lib) readFile;
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance)
         accentBase16Slot
@@ -17,26 +23,26 @@
         ;
     in
     {
-      accentBase16Slot = mkOption {
-        type = types.enum [
-          ""
-          "base08"
-          "base09"
-          "base0A"
-          "base0B"
-          "base0C"
-          "base0D"
-          "base0E"
-          "base0F"
-        ];
-
-        default = accentBase16Slot;
-
-        description = ''
-          Which base16 slot cosmic should use for its highlight/accent color.
-          Empty string "" inherits icedos.desktop.stylix.accentBase16Slot.
-        '';
-      };
+      accentBase16Slot =
+        mkEnumOption
+          {
+            default = accentBase16Slot;
+            description = ''
+              Which base16 slot cosmic should use for its highlight/accent color.
+              Empty string "" inherits icedos.desktop.stylix.accentBase16Slot.
+            '';
+          }
+          [
+            ""
+            "base08"
+            "base09"
+            "base0A"
+            "base0B"
+            "base0C"
+            "base0D"
+            "base0E"
+            "base0F"
+          ];
 
       followStylix = mkBoolOption { default = followStylix; };
       gaps = mkNumberOption { default = gaps; };

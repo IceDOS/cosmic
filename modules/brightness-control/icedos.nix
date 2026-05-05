@@ -1,11 +1,11 @@
-{ lib, ... }:
+{ icedosLib, ... }:
 
 {
   options.icedos.desktop.cosmic.brightnessControl.schedules =
     let
-      inherit (lib) mkOption;
+      inherit (icedosLib) mkUntypedOption;
     in
-    mkOption { default = [ ]; };
+    mkUntypedOption { default = [ ]; };
 
   outputs.nixosModules =
     { ... }:

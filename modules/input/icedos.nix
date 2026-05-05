@@ -5,6 +5,9 @@
     let
       inherit (icedosLib)
         mkBoolOption
+        mkEnumOption
+        mkIntBetweenOption
+        mkNonEmptyStrOption
         mkNumberOption
         mkStrListOption
         mkStrOption
@@ -13,9 +16,7 @@
 
       inherit (lib)
         head
-        mkOption
         readFile
-        types
         ;
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.input) keyboard mouse;
@@ -41,63 +42,44 @@
     in
     {
       keyboard = {
-        alternateCharactersKey = mkOption {
-          type = types.enum [
-            ""
-            "caps"
-            "lalt"
-            "lwin"
-            "menu"
-            "ralt"
-            "rwin"
-          ];
+        alternateCharactersKey = mkEnumOption { default = alternateCharactersKey; } [
+          ""
+          "caps"
+          "lalt"
+          "lwin"
+          "menu"
+          "ralt"
+          "rwin"
+        ];
 
-          default = alternateCharactersKey;
-        };
+        capsLockKey = mkEnumOption { default = capsLockKey; } [
+          ""
+          "backspace"
+          "ctrl_modifier"
+          "escape"
+          "super"
+          "swapescape"
+        ];
 
-        capsLockKey = mkOption {
-          type = types.enum [
-            ""
-            "backspace"
-            "ctrl_modifier"
-            "escape"
-            "super"
-            "swapescape"
-          ];
+        composeKey = mkEnumOption { default = composeKey; } [
+          ""
+          "caps"
+          "lwin"
+          "menu"
+          "prsc"
+          "ralt"
+          "rctrl"
+          "rwin"
+          "sclk"
+        ];
 
-          default = capsLockKey;
-        };
+        keyboardLayouts = mkNonEmptyStrOption { default = keyboardLayouts; };
 
-        composeKey = mkOption {
-          type = types.enum [
-            ""
-            "caps"
-            "lwin"
-            "menu"
-            "prsc"
-            "ralt"
-            "rctrl"
-            "rwin"
-            "sclk"
-          ];
-
-          default = composeKey;
-        };
-
-        keyboardLayouts = mkOption {
-          type = types.nonEmptyStr;
-          default = keyboardLayouts;
-        };
-
-        numlock = mkOption {
-          type = types.enum [
-            "BootOff"
-            "BootOn"
-            "LastBoot"
-          ];
-
-          default = numlock;
-        };
+        numlock = mkEnumOption { default = numlock; } [
+          "BootOff"
+          "BootOn"
+          "LastBoot"
+        ];
 
         repeatDelay = mkNumberOption { default = repeatDelay; };
         repeatRate = mkNumberOption { default = repeatRate; };
@@ -120,33 +102,20 @@
             variant = mkStrOption { default = variant; };
           };
 
-        superKeyAction = mkOption {
-          type = types.enum [
-            "AppLibrary"
-            "Disable"
-            "Launcher"
-            "WorkspaceOverview"
-          ];
-
-          default = superKeyAction;
-        };
+        superKeyAction = mkEnumOption { default = superKeyAction; } [
+          "AppLibrary"
+          "Disable"
+          "Launcher"
+          "WorkspaceOverview"
+        ];
       };
 
       mouse = {
         acceleration = mkBoolOption { default = acceleration; };
-
-        mouseSpeed = mkOption {
-          type = types.ints.between 0 100;
-          default = mouseSpeed;
-        };
-
+        mouseSpeed = mkIntBetweenOption { default = mouseSpeed; } 0 100;
         naturalScrolling = mkBoolOption { default = naturalScrolling; };
         primaryButtonRight = mkBoolOption { default = primaryButtonRight; };
-
-        scrollingSpeed = mkOption {
-          type = types.ints.between 1 100;
-          default = scrollingSpeed;
-        };
+        scrollingSpeed = mkIntBetweenOption { default = scrollingSpeed; } 1 100;
       };
     };
 

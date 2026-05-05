@@ -3,8 +3,8 @@
 {
   options.icedos.desktop.cosmic.accessibility.magnifier =
     let
-      inherit (icedosLib) mkBoolOption mkNumberOption;
-      inherit (lib) mkOption readFile types;
+      inherit (icedosLib) mkBoolOption mkEnumOption mkNumberOption;
+      inherit (lib) readFile;
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.accessibility.magnifier)
         mouseZoomShortcuts
@@ -15,15 +15,11 @@
         ;
     in
     {
-      moveZoom = mkOption {
-        type = types.enum [
-          "Continuously"
-          "OnEdge"
-          "Centered"
-        ];
-
-        default = moveZoom;
-      };
+      moveZoom = mkEnumOption { default = moveZoom; } [
+        "Continuously"
+        "OnEdge"
+        "Centered"
+      ];
 
       mouseZoomShortcuts = mkBoolOption { default = mouseZoomShortcuts; };
       overlay = mkBoolOption { default = overlay; };

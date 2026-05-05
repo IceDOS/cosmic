@@ -3,8 +3,7 @@
 {
   options.icedos.desktop.cosmic.workspaces =
     let
-      inherit (icedosLib) mkBoolOption;
-      inherit (lib) mkOption types;
+      inherit (icedosLib) mkBoolOption mkEnumOption;
 
       inherit
         (
@@ -19,13 +18,11 @@
         ;
     in
     {
-      orientation = mkOption {
-        type = types.enum [
-          "Horizontal"
-          "Vertical"
-        ];
-        default = orientation;
-      };
+      orientation = mkEnumOption { default = orientation; } [
+        "Horizontal"
+        "Vertical"
+      ];
+
       perScreen = mkBoolOption { default = perScreen; };
       tile = mkBoolOption { default = tile; };
     };
