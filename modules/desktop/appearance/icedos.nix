@@ -26,6 +26,8 @@
       accentBase16Slot =
         mkEnumOption
           {
+            path = "icedos.desktop.cosmic.appearance.accentBase16Slot";
+            source = ./config.toml;
             default = accentBase16Slot;
             description = ''
               Which base16 slot cosmic should use for its highlight/accent color.

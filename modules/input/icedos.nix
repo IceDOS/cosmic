@@ -42,44 +42,72 @@
     in
     {
       keyboard = {
-        alternateCharactersKey = mkEnumOption { default = alternateCharactersKey; } [
-          ""
-          "caps"
-          "lalt"
-          "lwin"
-          "menu"
-          "ralt"
-          "rwin"
-        ];
+        alternateCharactersKey =
+          mkEnumOption
+            {
+              path = "icedos.desktop.cosmic.input.keyboard.alternateCharactersKey";
+              source = ./config.toml;
+              default = alternateCharactersKey;
+            }
+            [
+              ""
+              "caps"
+              "lalt"
+              "lwin"
+              "menu"
+              "ralt"
+              "rwin"
+            ];
 
-        capsLockKey = mkEnumOption { default = capsLockKey; } [
-          ""
-          "backspace"
-          "ctrl_modifier"
-          "escape"
-          "super"
-          "swapescape"
-        ];
+        capsLockKey =
+          mkEnumOption
+            {
+              path = "icedos.desktop.cosmic.input.keyboard.capsLockKey";
+              source = ./config.toml;
+              default = capsLockKey;
+            }
+            [
+              ""
+              "backspace"
+              "ctrl_modifier"
+              "escape"
+              "super"
+              "swapescape"
+            ];
 
-        composeKey = mkEnumOption { default = composeKey; } [
-          ""
-          "caps"
-          "lwin"
-          "menu"
-          "prsc"
-          "ralt"
-          "rctrl"
-          "rwin"
-          "sclk"
-        ];
+        composeKey =
+          mkEnumOption
+            {
+              path = "icedos.desktop.cosmic.input.keyboard.composeKey";
+              source = ./config.toml;
+              default = composeKey;
+            }
+            [
+              ""
+              "caps"
+              "lwin"
+              "menu"
+              "prsc"
+              "ralt"
+              "rctrl"
+              "rwin"
+              "sclk"
+            ];
 
         keyboardLayouts = mkNonEmptyStrOption { default = keyboardLayouts; };
 
-        numlock = mkEnumOption { default = numlock; } [
-          "BootOff"
-          "BootOn"
-          "LastBoot"
-        ];
+        numlock =
+          mkEnumOption
+            {
+              path = "icedos.desktop.cosmic.input.keyboard.numlock";
+              source = ./config.toml;
+              default = numlock;
+            }
+            [
+              "BootOff"
+              "BootOn"
+              "LastBoot"
+            ];
 
         repeatDelay = mkNumberOption { default = repeatDelay; };
         repeatRate = mkNumberOption { default = repeatRate; };
@@ -102,20 +130,35 @@
             variant = mkStrOption { default = variant; };
           };
 
-        superKeyAction = mkEnumOption { default = superKeyAction; } [
-          "AppLibrary"
-          "Disable"
-          "Launcher"
-          "WorkspaceOverview"
-        ];
+        superKeyAction =
+          mkEnumOption
+            {
+              path = "icedos.desktop.cosmic.input.keyboard.superKeyAction";
+              source = ./config.toml;
+              default = superKeyAction;
+            }
+            [
+              "AppLibrary"
+              "Disable"
+              "Launcher"
+              "WorkspaceOverview"
+            ];
       };
 
       mouse = {
         acceleration = mkBoolOption { default = acceleration; };
-        mouseSpeed = mkIntBetweenOption { default = mouseSpeed; } 0 100;
+        mouseSpeed = mkIntBetweenOption {
+          path = "icedos.desktop.cosmic.input.mouse.mouseSpeed";
+          source = ./config.toml;
+          default = mouseSpeed;
+        } 0 100;
         naturalScrolling = mkBoolOption { default = naturalScrolling; };
         primaryButtonRight = mkBoolOption { default = primaryButtonRight; };
-        scrollingSpeed = mkIntBetweenOption { default = scrollingSpeed; } 1 100;
+        scrollingSpeed = mkIntBetweenOption {
+          path = "icedos.desktop.cosmic.input.mouse.scrollingSpeed";
+          source = ./config.toml;
+          default = scrollingSpeed;
+        } 1 100;
       };
     };
 

@@ -3,9 +3,12 @@
 {
   options.icedos.desktop.cosmic.brightnessControl.schedules =
     let
-      inherit (icedosLib) mkUntypedOption;
+      inherit (icedosLib) mkNumberOption mkStrOption mkSubmoduleListOption;
     in
-    mkUntypedOption { default = [ ]; };
+    mkSubmoduleListOption { default = [ ]; } {
+      at = mkStrOption { default = "00:00"; };
+      brightness = mkNumberOption { default = 100; };
+    };
 
   outputs.nixosModules =
     { ... }:

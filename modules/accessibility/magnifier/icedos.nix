@@ -15,11 +15,18 @@
         ;
     in
     {
-      moveZoom = mkEnumOption { default = moveZoom; } [
-        "Continuously"
-        "OnEdge"
-        "Centered"
-      ];
+      moveZoom =
+        mkEnumOption
+          {
+            path = "icedos.desktop.cosmic.accessibility.magnifier.moveZoom";
+            source = ./config.toml;
+            default = moveZoom;
+          }
+          [
+            "Continuously"
+            "OnEdge"
+            "Centered"
+          ];
 
       mouseZoomShortcuts = mkBoolOption { default = mouseZoomShortcuts; };
       overlay = mkBoolOption { default = overlay; };

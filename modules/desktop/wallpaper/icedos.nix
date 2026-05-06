@@ -59,7 +59,7 @@
                 globalWallpaper = osConfig.icedos.desktop.wallpaper;
                 cfg = osConfig.icedos.desktop.cosmic.wallpaper;
 
-                inherit (icedosLib) abortIf;
+                inherit (icedosLib) validate;
 
                 inherit (lib)
                   filter
@@ -153,7 +153,11 @@
 
                       type =
                         if
-                          (abortIf (length parts != 2) "A cosmic wallpaper entry's wallpaper attribute is misconfigured!")
+                          (validate.abort {
+                            when = length parts != 2;
+                            path = "icedos.desktop.cosmic.wallpaper.monitors.<entry>.wallpaper";
+                            msg = "A cosmic wallpaper entry's wallpaper attribute is misconfigured (expected 'type:value' shape)";
+                          })
                         then
                           head parts
                         else

@@ -18,10 +18,17 @@
         ;
     in
     {
-      orientation = mkEnumOption { default = orientation; } [
-        "Horizontal"
-        "Vertical"
-      ];
+      orientation =
+        mkEnumOption
+          {
+            path = "icedos.desktop.cosmic.workspaces.orientation";
+            source = ./config.toml;
+            default = orientation;
+          }
+          [
+            "Horizontal"
+            "Vertical"
+          ];
 
       perScreen = mkBoolOption { default = perScreen; };
       tile = mkBoolOption { default = tile; };

@@ -3,8 +3,8 @@
 {
   options.icedos.desktop.cosmic.x11 =
     let
-      inherit (icedosLib) mkBoolOption mkStrOption mkUntypedOption;
-      inherit (lib) readFile;
+      inherit (icedosLib) mkBoolOption mkEitherOption mkStrOption;
+      inherit (lib) readFile types;
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.x11)
         globalShortcuts
@@ -15,7 +15,7 @@
     {
       globalShortcuts = mkStrOption { default = globalShortcuts; };
       mouseEvents = mkBoolOption { default = mouseEvents; };
-      scaling = mkUntypedOption { default = scaling; };
+      scaling = with types; mkEitherOption { default = scaling; } bool str;
     };
 
   outputs.nixosModules =
