@@ -14,28 +14,24 @@
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.wallpaper)
         fit
+        monitors
         seconds
-        wallpaper
         ;
     in
     {
       fit = mkBoolOption { default = fit; };
+      seconds = mkNumberOption { default = seconds; };
 
       monitors =
         let
-          inherit (head (fromTOML (readFile ./monitors.toml)).icedos.desktop.cosmic.wallpaper.monitors)
-            name
-            ;
+          m = head (fromTOML (readFile ./monitors.toml)).icedos.desktop.cosmic.wallpaper.monitors;
         in
-        mkSubmoduleListOption { default = [ ]; } {
-          name = mkStrOption { default = name; };
-          fit = mkBoolOption { default = fit; };
-          seconds = mkNumberOption { default = seconds; };
-          wallpaper = mkStrOption { default = wallpaper; };
+        mkSubmoduleListOption { default = monitors; } {
+          name = mkStrOption { default = m.name; };
+          fit = mkBoolOption { default = m.fit; };
+          seconds = mkNumberOption { default = m.seconds; };
+          wallpaper = mkStrOption { default = m.wallpaper; };
         };
-
-      seconds = mkNumberOption { default = seconds; };
-      wallpaper = mkStrOption { default = wallpaper; };
     };
 
   outputs.nixosModules =
@@ -60,57 +56,63 @@
               let
                 inherit (config.lib.cosmic) mkRON;
 
-                inherit (osConfig.icedos) desktop;
-                inherit (desktop) cosmic;
-
-                inherit (cosmic.wallpaper)
-                  fit
-                  monitors
-                  seconds
-                  ;
+                globalWallpaper = osConfig.icedos.desktop.wallpaper;
+                cfg = osConfig.icedos.desktop.cosmic.wallpaper;
 
                 inherit (icedosLib) abortIf;
 
                 inherit (lib)
+                  filter
+                  hasPrefix
                   head
                   last
                   length
-                  listToAttrs
                   mkIf
-                  readFile
                   strings
                   toUpper
                   ;
 
                 inherit (import ../../../lib.nix { inherit lib; }) hexToRgb;
 
-                wallpaperDefault = (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.wallpaper.wallpaper;
-                stylixFollow = (osConfig.stylix.enable or false) && (cosmic.appearance.followStylix or false);
-                stylixImagePath = toString (osConfig.stylix.image or "");
-
-                wallpaper =
-                  if stylixFollow && cosmic.wallpaper.wallpaper == wallpaperDefault && stylixImagePath != "" then
-                    "path:${stylixImagePath}"
+                # Cosmic stores wallpapers in "type:value" (color:HEX or
+                # path:/img). Accept bare path, explicit "path:" prefix, or
+                # "color:" prefix from the global; prepend "path:" only when
+                # no recognized prefix is present.
+                globalAsTypeValue =
+                  if globalWallpaper == "" then
+                    ""
+                  else if hasPrefix "color:" globalWallpaper || hasPrefix "path:" globalWallpaper then
+                    globalWallpaper
                   else
-                    cosmic.wallpaper.wallpaper;
+                    "path:${globalWallpaper}";
 
-                generateWallpaper =
-                  source:
+                resolveMonitor = m: {
+                  name = m.name;
+                  fit = m.fit;
+                  seconds = m.seconds;
+                  wallpaper = if m.wallpaper != "" then m.wallpaper else globalAsTypeValue;
+                };
+
+                perScreen = length cfg.monitors > 0;
+
+                defaultEntry = {
+                  name = "all";
+                  fit = cfg.fit;
+                  seconds = cfg.seconds;
+                  wallpaper = globalAsTypeValue;
+                };
+
+                entries = if perScreen then map resolveMonitor cfg.monitors else [ defaultEntry ];
+
+                renderable = filter (e: e.wallpaper != "") entries;
+
+                generateSource =
+                  src:
                   let
                     inherit (strings) splitString;
-                    stringParts = splitString ":" source;
-
-                    type =
-                      if
-                        (abortIf (
-                          length stringParts != 2
-                        ) "A cosmic wallpaper setup's wallpaper attribute is misconfigured!")
-                      then
-                        head stringParts
-                      else
-                        "";
-
-                    value = last stringParts;
+                    parts = splitString ":" src;
+                    type = head parts;
+                    value = last parts;
                   in
                   {
                     color = mkRON "enum" {
@@ -118,11 +120,11 @@
                         {
                           colors =
                             let
-                              color = mkRON "tuple" (hexToRgb value);
+                              c = mkRON "tuple" (hexToRgb value);
                             in
                             [
-                              color
-                              color
+                              c
+                              c
                             ];
 
                           radius = 180.0;
@@ -136,54 +138,41 @@
                   }
                   .${type};
 
-                generateWallpaperConfig = monitor: {
+                generateEntry = e: {
                   filter_by_theme = false;
                   filter_method = mkRON "enum" "Linear";
-                  output = monitor;
-                  rotation_frequency = seconds;
+                  output = e.name;
+                  rotation_frequency = e.seconds;
                   sampling_method = mkRON "enum" "Alphanumeric";
-                  scaling_mode = mkRON "enum" (if fit then "Stretch" else "Zoom");
+                  scaling_mode = mkRON "enum" (if e.fit then "Stretch" else "Zoom");
 
                   source =
                     let
                       inherit (strings) splitString;
-                      stringParts = splitString ":" wallpaper;
+                      parts = splitString ":" e.wallpaper;
 
                       type =
                         if
-                          (abortIf (
-                            length stringParts != 2
-                          ) "A cosmic wallpaper setup's wallpaper attribute is misconfigured!")
+                          (abortIf (length parts != 2) "A cosmic wallpaper entry's wallpaper attribute is misconfigured!")
                         then
-                          head stringParts
+                          head parts
                         else
                           "";
+
+                      firstChar = builtins.substring 0 1 type;
+                      rest = builtins.substring 1 (builtins.stringLength type - 1) type;
                     in
                     mkRON "enum" {
                       value = [
-                        (generateWallpaper wallpaper)
+                        (generateSource e.wallpaper)
                       ];
 
-                      variant =
-                        let
-                          firstChar = builtins.substring 0 1 type;
-                          rest = builtins.substring 1 (builtins.stringLength type - 1) type;
-                        in
-                        (toUpper firstChar) + rest;
+                      variant = (toUpper firstChar) + rest;
                     };
                 };
-
-                perScreen = length monitors > 0;
               in
               {
-                wayland.desktopManager.cosmic.wallpapers = mkIf (wallpaper != "" && (length monitors) > 0) [
-                  (
-                    if (!perScreen) then
-                      generateWallpaperConfig "all"
-                    else
-                      listToAttrs (monitor: generateWallpaperConfig monitor) monitors
-                  )
-                ];
+                wayland.desktopManager.cosmic.wallpapers = mkIf (renderable != [ ]) (map generateEntry renderable);
               }
             )
           ];
