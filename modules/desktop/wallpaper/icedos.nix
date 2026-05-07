@@ -26,7 +26,7 @@
         let
           m = head (fromTOML (readFile ./monitors.toml)).icedos.desktop.cosmic.wallpaper.monitors;
         in
-        mkSubmoduleListOption { default = monitors; } {
+        mkSubmoduleListOption { default = [ ]; } {
           name = mkStrOption { default = m.name; };
           fit = mkBoolOption { default = m.fit; };
           seconds = mkNumberOption { default = m.seconds; };
