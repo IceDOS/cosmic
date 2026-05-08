@@ -14,7 +14,6 @@
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.wallpaper)
         fit
-        monitors
         seconds
         ;
     in
@@ -55,10 +54,8 @@
 
               let
                 inherit (config.lib.cosmic) mkRON;
-
-                globalWallpaper = osConfig.icedos.desktop.wallpaper;
-                cfg = osConfig.icedos.desktop.cosmic.wallpaper;
-
+                inherit (osConfig.icedos.desktop) cosmic wallpaper;
+                inherit (cosmic.wallpaper) fit monitors seconds;
                 inherit (icedosLib) validate;
 
                 inherit (lib)
@@ -72,19 +69,19 @@
                   toUpper
                   ;
 
-                inherit (import ../../../lib.nix { inherit icedosLib lib; }) hexToRgb;
+                inherit (import ../../../lib.nix { inherit icedosLib; }) hexToRgb;
 
                 # Cosmic stores wallpapers in "type:value" (color:HEX or
                 # path:/img). Accept bare path, explicit "path:" prefix, or
                 # "color:" prefix from the global; prepend "path:" only when
                 # no recognized prefix is present.
                 globalAsTypeValue =
-                  if globalWallpaper == "" then
+                  if wallpaper == "" then
                     ""
-                  else if hasPrefix "color:" globalWallpaper || hasPrefix "path:" globalWallpaper then
-                    globalWallpaper
+                  else if hasPrefix "color:" wallpaper || hasPrefix "path:" wallpaper then
+                    wallpaper
                   else
-                    "path:${globalWallpaper}";
+                    "path:${wallpaper}";
 
                 resolveMonitor = m: {
                   name = m.name;
@@ -93,16 +90,16 @@
                   wallpaper = if m.wallpaper != "" then m.wallpaper else globalAsTypeValue;
                 };
 
-                perScreen = length cfg.monitors > 0;
+                perScreen = length monitors > 0;
 
                 defaultEntry = {
+                  inherit fit seconds;
+
                   name = "all";
-                  fit = cfg.fit;
-                  seconds = cfg.seconds;
                   wallpaper = globalAsTypeValue;
                 };
 
-                entries = if perScreen then map resolveMonitor cfg.monitors else [ defaultEntry ];
+                entries = if perScreen then map resolveMonitor monitors else [ defaultEntry ];
 
                 renderable = filter (e: e.wallpaper != "") entries;
 

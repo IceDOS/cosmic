@@ -55,8 +55,10 @@
           ...
         }:
         let
-          inherit (config.icedos.desktop) windows;
-          inherit (config.icedos.desktop.cosmic.windowManagement)
+          inherit (config.icedos) desktop;
+          inherit (desktop) windows;
+
+          inherit (desktop.cosmic.windowManagement)
             cli
             focus
             snapWindowsToEdges

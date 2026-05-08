@@ -35,7 +35,10 @@
         }:
 
         let
-          inherit (config.icedos.desktop.cosmic)
+          inherit (config) icedos;
+          inherit (icedos) users;
+
+          inherit (icedos.desktop.cosmic)
             disableExcludedPackagesWarning
             dock
             excludeDefaultPackages
@@ -58,7 +61,7 @@
         in
         {
           icedos.desktop.cosmic.users = genDefaults {
-            users = config.icedos.users;
+            inherit users;
           };
 
           environment.systemPackages =

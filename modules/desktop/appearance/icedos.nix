@@ -88,7 +88,7 @@
                   if appearance.accentBase16Slot != "" then
                     appearance.accentBase16Slot
                   else
-                    osConfig.icedos.desktop.stylix.accentBase16Slot or "base0D";
+                    desktop.stylix.accentBase16Slot or "base0D";
 
                 inherit (config.lib.cosmic) mkRON;
                 inherit (icedosLib) generateAccentColor;
@@ -101,7 +101,7 @@
                   readFile
                   ;
 
-                inherit (import ../../../lib.nix { inherit icedosLib lib; }) hexToRgb;
+                inherit (import ../../../lib.nix { inherit icedosLib; }) hexToRgb;
 
                 appearanceDefaults = (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance;
 
@@ -154,7 +154,7 @@
 
                 force = true;
 
-                active_hint = osConfig.icedos.desktop.windows.activeHintSize;
+                active_hint = desktop.windows.activeHintSize;
 
                 gaps = mkRON "tuple" [
                   0

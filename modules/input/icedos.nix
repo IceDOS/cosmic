@@ -198,7 +198,7 @@
                 ;
 
               inherit (lib) flatten;
-              inherit (import ../../lib.nix { inherit lib; }) mouseSpeedToCosmicSpeed pow2;
+              inherit (import ../../lib.nix { inherit icedosLib; }) mouseSpeedToCosmicSpeed pow2;
 
               mouseSpeedValue = mouseSpeedToCosmicSpeed mouseSpeed;
               scrollFactorValue = pow2 ((0.1 * scrollingSpeed) - 5.0);

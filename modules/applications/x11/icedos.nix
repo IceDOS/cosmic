@@ -30,6 +30,7 @@
 
         let
           inherit (lib) isBool;
+
           inherit (config.icedos.desktop.cosmic.x11)
             globalShortcuts
             mouseEvents

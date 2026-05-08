@@ -24,8 +24,9 @@
         }:
 
         let
-          inherit (config.icedos.desktop.cosmic.power.lock) disableMonitorsOnLockKeybind;
-          inherit (config.icedos.desktop) users;
+          inherit (config.icedos) desktop;
+          inherit (desktop) users;
+          inherit (desktop.cosmic.power.lock) disableMonitorsOnLockKeybind;
 
           inherit (lib)
             concatStringsSep
