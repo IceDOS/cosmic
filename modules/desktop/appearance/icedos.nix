@@ -101,7 +101,7 @@
                   readFile
                   ;
 
-                inherit (import ../../../lib.nix { inherit lib; }) hexToRgb;
+                inherit (import ../../../lib.nix { inherit icedosLib lib; }) hexToRgb;
 
                 appearanceDefaults = (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance;
 

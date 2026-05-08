@@ -72,7 +72,7 @@
                   toUpper
                   ;
 
-                inherit (import ../../../lib.nix { inherit lib; }) hexToRgb;
+                inherit (import ../../../lib.nix { inherit icedosLib lib; }) hexToRgb;
 
                 # Cosmic stores wallpapers in "type:value" (color:HEX or
                 # path:/img). Accept bare path, explicit "path:" prefix, or

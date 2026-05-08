@@ -1,21 +1,7 @@
-{ lib }:
+{ icedosLib, lib }:
 
 let
-  inherit (lib) toLower;
-
-  hexChars = "0123456789abcdef";
-
-  hexDigitToInt = c: builtins.stringLength (builtins.head (builtins.split (toLower c) hexChars));
-
-  hexToInt =
-    hex:
-    let
-      len = builtins.stringLength hex;
-      go =
-        i: acc:
-        if i >= len then acc else go (i + 1) (acc * 16 + hexDigitToInt (builtins.substring i 1 hex));
-    in
-    go 0 0;
+  inherit (icedosLib.color) hexToRgbInts;
 
   roundFloat = f: builtins.floor (f * 1000000 + 0.5) / 1000000.0;
 
@@ -32,11 +18,8 @@ let
   ln2 = 0.6931471805599453;
 in
 {
-  hexToRgb = hex: [
-    (roundFloat ((hexToInt (builtins.substring 0 2 hex)) / 255.0))
-    (roundFloat ((hexToInt (builtins.substring 2 2 hex)) / 255.0))
-    (roundFloat ((hexToInt (builtins.substring 4 2 hex)) / 255.0))
-  ];
+  # Cosmic stores RGB as 0-1 floats (6-decimal precision via roundFloat).
+  hexToRgb = hex: map (i: roundFloat (i / 255.0)) (hexToRgbInts hex);
 
   # 2^x, used for scroll speed: 2^((0.1 * speed) - 5)
   pow2 = x: exp (x * ln2);
