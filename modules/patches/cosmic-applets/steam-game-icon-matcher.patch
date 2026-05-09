@@ -1,7 +1,7 @@
 diff --git a/cosmic-app-list/src/app.rs b/cosmic-app-list/src/app.rs
 --- a/cosmic-app-list/src/app.rs	1970-01-01 02:00:01.000000000 +0200
-+++ b/cosmic-app-list/src/app.rs	2026-04-03 16:27:47.761515271 +0300
-@@ -748,6 +748,62 @@
++++ b/cosmic-app-list/src/app.rs	2026-05-09 00:00:00.000000000 +0300
+@@ -789,6 +789,62 @@
          focused_toplevels
      }
  
@@ -64,7 +64,7 @@ diff --git a/cosmic-app-list/src/app.rs b/cosmic-app-list/src/app.rs
      fn find_desktop_entry_for_toplevel(
          &mut self,
          info: &ToplevelInfo,
-@@ -787,6 +843,15 @@
+@@ -828,6 +884,15 @@
                          }
                      }
                  }

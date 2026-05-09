@@ -35,7 +35,6 @@
       (
         {
           config,
-          lib,
           ...
         }:
         let
