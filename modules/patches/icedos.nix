@@ -16,7 +16,12 @@
         xdg-desktop-portal-cosmic
         ;
 
-      inherit (cosmic-applets) notificationHtmlMarkup stableClockWidth steamGameIconMatcher;
+      inherit (cosmic-applets)
+        boldPanelText
+        notificationHtmlMarkup
+        stableClockWidth
+        steamGameIconMatcher
+        ;
 
       inherit (cosmic-comp)
         dmemForegroundBooster
@@ -38,6 +43,7 @@
       };
 
       cosmic-applets = {
+        boldPanelText = mkBoolOption { default = boldPanelText; };
         notificationHtmlMarkup = mkBoolOption { default = notificationHtmlMarkup; };
         stableClockWidth = mkBoolOption { default = stableClockWidth; };
         steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
@@ -73,7 +79,13 @@
             xdg-desktop-portal-cosmic
             ;
 
-          inherit (cosmic-applets) notificationHtmlMarkup stableClockWidth steamGameIconMatcher;
+          inherit (cosmic-applets)
+            boldPanelText
+            notificationHtmlMarkup
+            stableClockWidth
+            steamGameIconMatcher
+            ;
+
           inherit (cosmic-comp) dmemForegroundBooster fixTilingHintClipping perWindowKeyboardLayout;
           inherit (cosmic-notifications) windowMatchingRoundness;
           inherit (cosmic-osd) keyboardLayoutOsd osdTimeoutMs;
@@ -101,6 +113,44 @@
               'Button::Card => corner_radii.radius_xs.into(),' \
               'Button::Card => corner_radii.radius_s.into(),'
           '';
+
+          # Bold panel-button text on clock + input-sources to match workspaces' weight.
+          # Horizontal clock anchor differs depending on whether stable-clock-width.patch
+          # is also applied, so branch on which form is in the tree at postPatch time.
+          boldPanelTextPatch = ''
+            if grep -q 'self.core.applet.text(visible_str)' cosmic-applet-time/src/window.rs; then
+              substituteInPlace cosmic-applet-time/src/window.rs \
+                --replace-fail \
+                'container(self.core.applet.text(visible_str))' \
+                'container(self.core.applet.text(visible_str).font(cosmic::font::bold()))'
+              # Bold the invisible width-lock too, so the stack sizes itself by bold
+              # metrics on both children.
+              substituteInPlace cosmic-applet-time/src/window.rs \
+                --replace-fail \
+                '.text(lock_str)' \
+                '.text(lock_str).font(cosmic::font::bold())'
+            else
+              substituteInPlace cosmic-applet-time/src/window.rs \
+                --replace-fail \
+                'self.core.applet.text(formatted_date),' \
+                'self.core.applet.text(formatted_date).font(cosmic::font::bold()),'
+            fi
+
+            substituteInPlace cosmic-applet-time/src/window.rs \
+              --replace-fail \
+              'self.core.applet.text(piece.to_owned()).into()' \
+              'self.core.applet.text(piece.to_owned()).font(cosmic::font::bold()).into()'
+
+            substituteInPlace cosmic-applet-time/src/window.rs \
+              --replace-fail \
+              'self.core.applet.text(p.to_owned()).into()' \
+              'self.core.applet.text(p.to_owned()).font(cosmic::font::bold()).into()'
+
+            substituteInPlace cosmic-applet-input-sources/src/lib.rs \
+              --replace-fail \
+              'let input_source_text = self.core.applet.text(applet_text);' \
+              'let input_source_text = self.core.applet.text(applet_text).font(cosmic::font::bold());'
+          '';
         in
         {
           xdg.portal.config.common = mkIf useGtkFilePicker {
@@ -125,7 +175,13 @@
               )
               ++
                 optional
-                  (steamGameIconMatcher || notificationHtmlMarkup || windowMatchingRoundness || stableClockWidth)
+                  (
+                    boldPanelText
+                    || notificationHtmlMarkup
+                    || steamGameIconMatcher
+                    || windowMatchingRoundness
+                    || stableClockWidth
+                  )
                   (
                     final: prev: {
                       cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
@@ -138,7 +194,9 @@
                           ++ optional stableClockWidth ./cosmic-applets/stable-clock-width.patch;
 
                         postPatch =
-                          (old.postPatch or "") + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
+                          (old.postPatch or "")
+                          + optionalString boldPanelText boldPanelTextPatch
+                          + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
                       });
                     }
                   )
