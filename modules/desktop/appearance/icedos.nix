@@ -70,7 +70,12 @@
         {
           home-manager.sharedModules = [
             (
-              { config, ... }:
+              {
+                config,
+                lib,
+                pkgs,
+                ...
+              }:
 
               let
                 inherit (desktop.cosmic) appearance;
@@ -232,6 +237,13 @@
 
                 text_hint = generateRgbRon { color = pickColor "base04" "c0c0c1"; };
 
+                # text_tint shifts accent-on / on-foreground colors so labels on
+                # accent backgrounds (Authenticate / Save buttons, app-list
+                # selected pill, etc.) keep contrast. White on dark, black on
+                # light — same rule libadwaita uses for `accent_fg_color`.
+                textTintWhite = generateRgbRon { color = "ffffff"; };
+                textTintBlack = generateRgbRon { color = "000000"; };
+
                 generatedTheme = {
                   inherit
                     accent
@@ -255,8 +267,12 @@
 
                 wayland.desktopManager.cosmic.appearance = {
                   theme = {
-                    dark = generatedTheme;
-                    light = generatedTheme;
+                    dark = generatedTheme // {
+                      text_tint = textTintWhite;
+                    };
+                    light = generatedTheme // {
+                      text_tint = textTintBlack;
+                    };
                   };
 
                   toolkit =
@@ -304,6 +320,38 @@
                     "cosmic/com.system76.CosmicTk/v1/interface_font" = mkFontFile osConfig.stylix.fonts.sansSerif.name;
                     "cosmic/com.system76.CosmicTk/v1/monospace_font" = mkFontFile osConfig.stylix.fonts.monospace.name;
                   };
+
+                # libcosmic's theme builder auto-derives `accent_button.on`
+                # from accent luminance with a fixed threshold; for dark
+                # accents like base0E (#9141ac, luminance ~0.14) it picks
+                # black, leaving black labels on a dark-purple button — bad
+                # contrast. text_tint is the documented knob but does not
+                # override on-accent fg in this libcosmic version. Patch the
+                # generated theme files post-build to force white-on-dark /
+                # black-on-light. Runs after `buildCosmicTheme` so it lands
+                # last in HM activation.
+                home.activation.icedos-cosmic-accent-on-fix =
+                  lib.hm.dag.entryAfter
+                    [
+                      "buildCosmicTheme"
+                    ]
+                    ''
+                      patch_on_block() {
+                        local file="$1"
+                        local r="$2"
+                        local g="$3"
+                        local b="$4"
+                        [ -f "$file" ] || return 0
+                        ${pkgs.gnused}/bin/sed -i -z \
+                          's/    on: (\n        red: [0-9.]\+,\n        green: [0-9.]\+,\n        blue: [0-9.]\+,\n        alpha: [0-9.]\+,\n    ),/    on: (\n        red: '"$r"',\n        green: '"$g"',\n        blue: '"$b"',\n        alpha: 1.0,\n    ),/' \
+                          "$file" || true
+                      }
+
+                      darkBtn="$HOME/.config/cosmic/com.system76.CosmicTheme.Dark/v1/accent_button"
+                      lightBtn="$HOME/.config/cosmic/com.system76.CosmicTheme.Light/v1/accent_button"
+                      patch_on_block "$darkBtn"  1.0 1.0 1.0
+                      patch_on_block "$lightBtn" 0.0 0.0 0.0
+                    '';
               }
             )
           ];
