@@ -1,5 +1,4 @@
 [icedos.desktop.cosmic.appearance]
-accentBase16Slot = ""
 followStylix = true
 gaps = 0
 gtkTheming = false

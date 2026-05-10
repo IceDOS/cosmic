@@ -5,7 +5,6 @@
     let
       inherit (icedosLib)
         mkBoolOption
-        mkEnumOption
         mkNumberOption
         mkStrOption
         ;
@@ -13,7 +12,6 @@
       inherit (lib) readFile;
 
       inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance)
-        accentBase16Slot
         followStylix
         gaps
         gtkTheming
@@ -23,29 +21,6 @@
         ;
     in
     {
-      accentBase16Slot =
-        mkEnumOption
-          {
-            path = "icedos.desktop.cosmic.appearance.accentBase16Slot";
-            source = ./config.toml;
-            default = accentBase16Slot;
-            description = ''
-              Which base16 slot cosmic should use for its highlight/accent color.
-              Empty string "" inherits icedos.desktop.stylix.accentBase16Slot.
-            '';
-          }
-          [
-            ""
-            "base08"
-            "base09"
-            "base0A"
-            "base0B"
-            "base0C"
-            "base0D"
-            "base0E"
-            "base0F"
-          ];
-
       followStylix = mkBoolOption { default = followStylix; };
       gaps = mkNumberOption { default = gaps; };
       gtkTheming = mkBoolOption { default = gtkTheming; };
@@ -87,21 +62,13 @@
                   roundness
                   ;
 
-                # Accent slot: honor explicit cosmic override, otherwise inherit
-                # the global stylix choice so everything matches.
-                accentBase16Slot =
-                  if appearance.accentBase16Slot != "" then
-                    appearance.accentBase16Slot
-                  else
-                    desktop.stylix.accentBase16Slot or "base0D";
+                resolved = icedosLib.generateAccent osConfig;
 
                 inherit (config.lib.cosmic) mkRON;
-                inherit (icedosLib) generateAccentColor;
 
                 inherit (lib)
                   elemAt
                   genList
-                  hasAttr
                   optionalAttrs
                   readFile
                   ;
@@ -204,21 +171,7 @@
                 isModeAuto = effectiveMode == "auto";
                 mode = if isModeAuto then "dark" else effectiveMode;
 
-                fallbackAccentHex =
-                  let
-                    raw = generateAccentColor {
-                      inherit (desktop) accentColor;
-                      gnomeAccentColor = desktop.gnome.accentColor or "blue";
-                      hasGnome = hasAttr "gnome" desktop;
-                    };
-                  in
-                  builtins.substring 1 (builtins.stringLength raw - 1) raw;
-
-                accent =
-                  if stylixEnabled then
-                    generateRgbRon { color = stylixColors.${accentBase16Slot}; }
-                  else
-                    generateRgbRon { color = fallbackAccentHex; };
+                accent = generateRgbRon { color = resolved.hexNoHash; };
 
                 bg_color = generateRgbRon {
                   color = pickColor "base00" "1d1d20";
