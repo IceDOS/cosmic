@@ -1,6 +1,5 @@
 [icedos.desktop.cosmic.patches.cosmic-applets]
 boldPanelText = false
-notificationHtmlMarkup = false
 stableClockWidth = false
 steamGameIconMatcher = false
 
