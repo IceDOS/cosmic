@@ -18,7 +18,6 @@
 
       inherit (cosmic-applets)
         boldPanelText
-        notificationHtmlMarkup
         stableClockWidth
         steamGameIconMatcher
         ;
@@ -44,7 +43,6 @@
 
       cosmic-applets = {
         boldPanelText = mkBoolOption { default = boldPanelText; };
-        notificationHtmlMarkup = mkBoolOption { default = notificationHtmlMarkup; };
         stableClockWidth = mkBoolOption { default = stableClockWidth; };
         steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
       };
@@ -81,7 +79,6 @@
 
           inherit (cosmic-applets)
             boldPanelText
-            notificationHtmlMarkup
             stableClockWidth
             steamGameIconMatcher
             ;
@@ -123,12 +120,6 @@
                 --replace-fail \
                 'container(self.core.applet.text(visible_str))' \
                 'container(self.core.applet.text(visible_str).font(cosmic::font::bold()))'
-              # Bold the invisible width-lock too, so the stack sizes itself by bold
-              # metrics on both children.
-              substituteInPlace cosmic-applet-time/src/window.rs \
-                --replace-fail \
-                '.text(lock_str)' \
-                '.text(lock_str).font(cosmic::font::bold())'
             else
               substituteInPlace cosmic-applet-time/src/window.rs \
                 --replace-fail \
@@ -173,33 +164,23 @@
                   });
                 }
               )
-              ++
-                optional
-                  (
-                    boldPanelText
-                    || notificationHtmlMarkup
-                    || steamGameIconMatcher
-                    || windowMatchingRoundness
-                    || stableClockWidth
-                  )
-                  (
-                    final: prev: {
-                      cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
-                        inherit doCheck;
+              ++ optional (boldPanelText || steamGameIconMatcher || windowMatchingRoundness || stableClockWidth) (
+                final: prev: {
+                  cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
+                    inherit doCheck;
 
-                        patches =
-                          (old.patches or [ ])
-                          ++ optional steamGameIconMatcher ./cosmic-applets/steam-game-icon-matcher.patch
-                          ++ optional notificationHtmlMarkup ./cosmic-applets/notification-html-markup.patch
-                          ++ optional stableClockWidth ./cosmic-applets/stable-clock-width.patch;
+                    patches =
+                      (old.patches or [ ])
+                      ++ optional steamGameIconMatcher ./cosmic-applets/steam-game-icon-matcher.patch
+                      ++ optional stableClockWidth ./cosmic-applets/stable-clock-width.patch;
 
-                        postPatch =
-                          (old.postPatch or "")
-                          + optionalString boldPanelText boldPanelTextPatch
-                          + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
-                      });
-                    }
-                  )
+                    postPatch =
+                      (old.postPatch or "")
+                      + optionalString boldPanelText boldPanelTextPatch
+                      + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
+                  });
+                }
+              )
               ++ optional keyboardLayoutOsd (
                 final: prev: {
                   cosmic-osd = prev.cosmic-osd.overrideAttrs (old: {
