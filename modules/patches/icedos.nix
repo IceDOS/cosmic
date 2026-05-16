@@ -187,7 +187,6 @@
                     inherit doCheck;
 
                     patches = (old.patches or [ ]) ++ [
-                      ./cosmic-osd/fix-close-timer-race.patch
                       ./cosmic-osd/keyboard-layout-osd.patch
                     ];
                   });
