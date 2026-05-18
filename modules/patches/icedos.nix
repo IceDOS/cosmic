@@ -18,6 +18,7 @@
 
       inherit (cosmic-applets)
         boldPanelText
+        centerPanelText
         stableClockWidth
         steamGameIconMatcher
         ;
@@ -43,6 +44,7 @@
 
       cosmic-applets = {
         boldPanelText = mkBoolOption { default = boldPanelText; };
+        centerPanelText = mkBoolOption { default = centerPanelText; };
         stableClockWidth = mkBoolOption { default = stableClockWidth; };
         steamGameIconMatcher = mkBoolOption { default = steamGameIconMatcher; };
       };
@@ -79,6 +81,7 @@
 
           inherit (cosmic-applets)
             boldPanelText
+            centerPanelText
             stableClockWidth
             steamGameIconMatcher
             ;
@@ -118,13 +121,13 @@
             if grep -q 'self.core.applet.text(visible_str)' cosmic-applet-time/src/window.rs; then
               substituteInPlace cosmic-applet-time/src/window.rs \
                 --replace-fail \
-                'container(self.core.applet.text(visible_str))' \
-                'container(self.core.applet.text(visible_str).font(cosmic::font::bold()))'
+                'self.core.applet.text(visible_str)' \
+                'self.core.applet.text(visible_str).font(cosmic::font::bold())'
             else
               substituteInPlace cosmic-applet-time/src/window.rs \
                 --replace-fail \
-                'self.core.applet.text(formatted_date),' \
-                'self.core.applet.text(formatted_date).font(cosmic::font::bold()),'
+                'self.core.applet.text(formatted_date)' \
+                'self.core.applet.text(formatted_date).font(cosmic::font::bold())'
             fi
 
             substituteInPlace cosmic-applet-time/src/window.rs \
@@ -141,6 +144,30 @@
               --replace-fail \
               'let input_source_text = self.core.applet.text(applet_text);' \
               'let input_source_text = self.core.applet.text(applet_text).font(cosmic::font::bold());'
+          '';
+
+          centerPanelTextPatch = ''
+            if grep -q 'self.core.applet.text(visible_str)' cosmic-applet-time/src/window.rs; then
+              substituteInPlace cosmic-applet-time/src/window.rs \
+                --replace-fail \
+                'self.core.applet.text(visible_str)' \
+                'container(column![space::vertical().height(Length::Fixed(2.25)), self.core.applet.text(visible_str)]).height(Length::Fixed((self.core.applet.suggested_size(true).1 + 2 * self.core.applet.suggested_padding(true).1) as f32)).align_y(Alignment::Center)'
+
+              substituteInPlace cosmic-applet-time/src/window.rs \
+                --replace-fail \
+                '.class(cosmic::theme::Text::Color(Color::TRANSPARENT))' \
+                '.class(cosmic::theme::Text::Color(Color::TRANSPARENT)).height(Length::Fixed((self.core.applet.suggested_size(true).1 + 2 * self.core.applet.suggested_padding(true).1) as f32))'
+            else
+              substituteInPlace cosmic-applet-time/src/window.rs \
+                --replace-fail \
+                'self.core.applet.text(formatted_date)' \
+                'container(column![space::vertical().height(Length::Fixed(2.25)), self.core.applet.text(formatted_date)]).height(Length::Fixed((self.core.applet.suggested_size(true).1 + 2 * self.core.applet.suggested_padding(true).1) as f32)).align_y(Alignment::Center)'
+            fi
+
+            substituteInPlace cosmic-applet-workspaces/src/components/app.rs \
+              --replace-fail \
+              'self.core.applet.text(&w.name).font(cosmic::font::bold())' \
+              'container(column![space::vertical().height(Length::Fixed(2.25)), self.core.applet.text(&w.name).font(cosmic::font::bold())]).height(Length::Fixed((self.core.applet.suggested_size(true).1 + 2 * self.core.applet.suggested_padding(true).1) as f32)).align_y(Alignment::Center)'
           '';
         in
         {
@@ -164,23 +191,33 @@
                   });
                 }
               )
-              ++ optional (boldPanelText || steamGameIconMatcher || windowMatchingRoundness || stableClockWidth) (
-                final: prev: {
-                  cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
-                    inherit doCheck;
+              ++
+                optional
+                  (
+                    boldPanelText
+                    || centerPanelText
+                    || steamGameIconMatcher
+                    || windowMatchingRoundness
+                    || stableClockWidth
+                  )
+                  (
+                    final: prev: {
+                      cosmic-applets = prev.cosmic-applets.overrideAttrs (old: {
+                        inherit doCheck;
 
-                    patches =
-                      (old.patches or [ ])
-                      ++ optional steamGameIconMatcher ./cosmic-applets/steam-game-icon-matcher.patch
-                      ++ optional stableClockWidth ./cosmic-applets/stable-clock-width.patch;
+                        patches =
+                          (old.patches or [ ])
+                          ++ optional steamGameIconMatcher ./cosmic-applets/steam-game-icon-matcher.patch
+                          ++ optional stableClockWidth ./cosmic-applets/stable-clock-width.patch;
 
-                    postPatch =
-                      (old.postPatch or "")
-                      + optionalString boldPanelText boldPanelTextPatch
-                      + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
-                  });
-                }
-              )
+                        postPatch =
+                          (old.postPatch or "")
+                          + optionalString centerPanelText centerPanelTextPatch
+                          + optionalString boldPanelText boldPanelTextPatch
+                          + optionalString windowMatchingRoundness libcosmicCardRoundnessPatch;
+                      });
+                    }
+                  )
               ++ optional keyboardLayoutOsd (
                 final: prev: {
                   cosmic-osd = prev.cosmic-osd.overrideAttrs (old: {
