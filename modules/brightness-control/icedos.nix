@@ -1,13 +1,46 @@
 { icedosLib, ... }:
 
 {
-  options.icedos.desktop.cosmic.brightnessControl.schedules =
+  options.icedos.desktop.cosmic.brightnessControl =
     let
-      inherit (icedosLib) mkNumberOption mkStrOption mkSubmoduleListOption;
+      inherit (icedosLib)
+        mkBoolOption
+        mkFloatBetweenOption
+        mkIntBetweenOption
+        mkNumberOption
+        mkStrOption
+        mkSubmoduleListOption
+        ;
+
+      inherit (builtins) readFile;
+
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.brightnessControl.transition)
+        enable
+        step
+        interval
+        ;
     in
-    mkSubmoduleListOption { default = [ ]; } {
-      at = mkStrOption { default = "00:00"; };
-      brightness = mkNumberOption { default = 100; };
+    {
+      schedules = mkSubmoduleListOption { default = [ ]; } {
+        at = mkStrOption { default = "00:00"; };
+        brightness = mkNumberOption { default = 100; };
+      };
+
+      transition = {
+        enable = mkBoolOption { default = enable; };
+
+        step = mkIntBetweenOption {
+          path = "icedos.desktop.cosmic.brightnessControl.transition.step";
+          source = ./config.toml;
+          default = step;
+        } 1 100;
+
+        interval = mkFloatBetweenOption {
+          path = "icedos.desktop.cosmic.brightnessControl.transition.interval";
+          source = ./config.toml;
+          default = interval;
+        } 0.05 10.0;
+      };
     };
 
   outputs.nixosModules =
@@ -22,7 +55,7 @@
         }:
 
         let
-          inherit (config.icedos.desktop.cosmic.brightnessControl) schedules;
+          inherit (config.icedos.desktop.cosmic.brightnessControl) schedules transition;
 
           inherit (lib)
             concatStringsSep
@@ -48,7 +81,9 @@
             imap0 (
               i: entry:
               let
-                brightness = toString (entry.brightness / 100.0);
+                # Emitted as integer percent; scheduler steps in percent and
+                # formats the 0.0-1.0 fraction at apply time.
+                brightness = toString entry.brightness;
                 mins = toString (parseTime entry.at);
                 isLast = i == (builtins.length sorted - 1);
 
@@ -74,26 +109,73 @@
             ) sorted
           );
 
-          schedulerScript = pkgs.writeShellScriptBin "cosmic-brightness-scheduler" ''
-            last_brightness=""
+          schedulerScript =
+            let
+              bc = "${pkgs.bc}/bin/bc";
+              sleep = "${pkgs.coreutils}/bin/sleep";
+              date = "${pkgs.coreutils}/bin/date";
+              cut = "${pkgs.coreutils}/bin/cut";
+            in
+            pkgs.writeShellScriptBin "cosmic-brightness-scheduler" ''
+              SMOOTH="${if transition.enable then "true" else "false"}"
+              STEP=${toString transition.step}
+              INTERVAL=${toString transition.interval}
 
-            get_target_brightness() {
-              now=$((10#$(${pkgs.coreutils}/bin/date +%H) * 60 + 10#$(${pkgs.coreutils}/bin/date +%M)))
-              ${parsedSchedules}
-            }
+              last_pct=""
 
-            while true; do
-              target=$(get_target_brightness)
+              get_target_brightness() {
+                now=$((10#$(${date} +%H) * 60 + 10#$(${date} +%M)))
+                ${parsedSchedules}
+              }
 
-              if [ "$target" != "$last_brightness" ]; then
-                busctl --user set-property rs.wl-gammarelay / rs.wl.gammarelay Brightness d "$target" 2>/dev/null &&
-                echo "Set brightness to: $target" &&
-                last_brightness="$target"
-              fi
+              read_current_pct() {
+                raw=$(busctl --user get-property rs.wl-gammarelay / rs.wl.gammarelay Brightness 2>/dev/null | ${cut} -d' ' -f2)
+                case "$raw" in
+                  "" | *[!0-9.]* ) echo 100 ;;
+                  * ) echo "scale=0; ($raw * 100 + 0.5) / 1" | ${bc} 2>/dev/null || echo 100 ;;
+                esac
+              }
 
-              sleep 60
-            done
-          '';
+              apply_pct() {
+                busctl --user set-property rs.wl-gammarelay / rs.wl.gammarelay Brightness d "$(printf '%d.%02d' $(( $1 / 100 )) $(( $1 % 100 )))" 2>/dev/null
+              }
+
+              transition_to() {
+                tgt=$1
+
+                if [ "$SMOOTH" != "true" ] || [ "$STEP" -le 0 ]; then
+                  apply_pct "$tgt"
+                  last_pct=$tgt
+                  return
+                fi
+
+                [ -z "$last_pct" ] && last_pct=$(read_current_pct)
+                cur=$last_pct
+
+                while [ "$cur" != "$tgt" ]; do
+                  if [ "$cur" -lt "$tgt" ]; then
+                    cur=$(( cur + STEP )); [ "$cur" -gt "$tgt" ] && cur=$tgt
+                  else
+                    cur=$(( cur - STEP )); [ "$cur" -lt "$tgt" ] && cur=$tgt
+                  fi
+                  apply_pct "$cur"
+                  [ "$cur" != "$tgt" ] && ${sleep} "$INTERVAL"
+                done
+
+                last_pct=$tgt
+              }
+
+              while true; do
+                target=$(get_target_brightness)
+
+                if [ -n "$target" ] && [ "$target" != "$last_pct" ]; then
+                  transition_to "$target"
+                  echo "Set brightness to: $last_pct"
+                fi
+
+                ${sleep} 60
+              done
+            '';
         in
         {
           home-manager.sharedModules = [
