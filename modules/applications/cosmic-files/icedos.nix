@@ -47,15 +47,12 @@
             iconSize
             view
             ;
-
-          force = true;
         in
         {
           home-manager.sharedModules = [
             {
               xdg.configFile = {
                 "cosmic/com.system76.CosmicFiles/v1/dialog" = {
-                  inherit force;
                   text = ''
                     (
                         folders_first: ${if foldersFirst then "true" else "false"},
@@ -71,7 +68,6 @@
                 };
 
                 "cosmic/com.system76.CosmicFiles/v1/tab" = {
-                  inherit force;
                   text = ''
                     (
                         folders_first: ${if foldersFirst then "true" else "false"},

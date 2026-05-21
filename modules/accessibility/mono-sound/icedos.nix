@@ -21,13 +21,11 @@
 
         let
           inherit (config.icedos.desktop.cosmic.accessibility) monoSound;
-          force = true;
         in
         {
           home-manager.sharedModules = [
             {
               xdg.configFile."cosmic/com.system76.CosmicSettingsDaemon/v1/mono_sound" = {
-                inherit force;
                 text = if monoSound then "true" else "false";
               };
             }

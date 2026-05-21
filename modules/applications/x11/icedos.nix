@@ -43,12 +43,9 @@
               { config, ... }:
               let
                 inherit (config.lib.cosmic) mkRON;
-                force = true;
               in
               {
                 xdg.configFile."cosmic/com.system76.CosmicComp/v1/xwayland_eavesdropping" = {
-                  inherit force;
-
                   text = ''
                     (
                         keyboard: ${if globalShortcuts == "None" then "r#None" else globalShortcuts},

@@ -123,8 +123,6 @@
                     radius_xl = mkRonTuple radiusXl;
                   };
 
-                force = true;
-
                 active_hint = desktop.windows.activeHintSize;
 
                 gaps = mkRON "tuple" [
@@ -244,14 +242,9 @@
                     };
                 };
 
-                # cosmic-manager's configFile mechanism doesn't force-overwrite
-                # toolkit fonts once a stale value is on disk, so own those two
-                # files directly with force = true. Format must match exactly
-                # what COSMIC reads back as a RON struct.
                 xdg.configFile =
                   let
                     mkFontFile = family: {
-                      inherit force;
                       text = ''
                         (
                             family: "${family}",
@@ -264,7 +257,6 @@
                   in
                   {
                     "cosmic/com.system76.CosmicTheme.Mode/v1/auto_switch" = {
-                      inherit force;
                       text = if isModeAuto then "true" else "false";
                     };
                   }
