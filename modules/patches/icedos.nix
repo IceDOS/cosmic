@@ -33,7 +33,6 @@
       inherit (cosmic-osd) keyboardLayoutOsd osdTimeoutMs;
       inherit (cosmic-panel.autohide) alwaysHide;
       inherit (pop-gtk-theme) skipInkscape;
-      inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
     in
     {
       cosmic-comp = {
@@ -57,10 +56,6 @@
 
       cosmic-panel.autohide.alwaysHide = mkBoolOption { default = alwaysHide; };
       pop-gtk-theme.skipInkscape = mkBoolOption { default = skipInkscape; };
-
-      xdg-desktop-portal-cosmic = {
-        useGtkFilePicker = mkBoolOption { default = useGtkFilePicker; };
-      };
     };
 
   outputs.nixosModules =
@@ -76,7 +71,6 @@
             cosmic-osd
             cosmic-panel
             pop-gtk-theme
-            xdg-desktop-portal-cosmic
             ;
 
           inherit (cosmic-applets)
@@ -91,12 +85,10 @@
           inherit (cosmic-osd) keyboardLayoutOsd osdTimeoutMs;
           inherit (cosmic-panel.autohide) alwaysHide;
           inherit (pop-gtk-theme) skipInkscape;
-          inherit (xdg-desktop-portal-cosmic) useGtkFilePicker;
 
           inherit (lib)
             filter
             getName
-            mkIf
             optional
             optionalString
             ;
@@ -171,10 +163,6 @@
           '';
         in
         {
-          xdg.portal.config.common = mkIf useGtkFilePicker {
-            "org.freedesktop.impl.portal.FileChooser" = "gtk";
-          };
-
           nixpkgs.overlays =
             [ ]
             ++ (

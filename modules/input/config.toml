@@ -2,7 +2,6 @@
 alternateCharactersKey = "" # lalt, ralt, lwin, rwin, menu, caps
 capsLockKey = "" # escape, swapescape, backspace, super, ctrl_modifier
 composeKey = "" # ralt, lwin, rwin, menu, rctrl, caps, sclk, prsc
-keyboardLayouts = "us,gr"
 numlock = "BootOn" # BootOff, BootOn, LastBoot
 repeatDelay = 600
 repeatRate = 25

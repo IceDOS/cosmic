@@ -7,7 +7,6 @@
         mkBoolOption
         mkEnumOption
         mkIntBetweenOption
-        mkNonEmptyStrOption
         mkNumberOption
         mkStrListOption
         mkStrOption
@@ -25,7 +24,6 @@
         alternateCharactersKey
         capsLockKey
         composeKey
-        keyboardLayouts
         numlock
         repeatDelay
         repeatRate
@@ -93,8 +91,6 @@
               "rwin"
               "sclk"
             ];
-
-        keyboardLayouts = mkNonEmptyStrOption { default = keyboardLayouts; };
 
         numlock =
           mkEnumOption
@@ -175,13 +171,13 @@
         {
           home-manager.sharedModules =
             let
+              inherit (config.icedos.desktop) keyboardLayouts;
               inherit (config.icedos.desktop.cosmic.input) keyboard mouse;
 
               inherit (keyboard)
                 alternateCharactersKey
                 capsLockKey
                 composeKey
-                keyboardLayouts
                 numlock
                 repeatDelay
                 repeatRate
@@ -197,7 +193,12 @@
                 scrollingSpeed
                 ;
 
-              inherit (lib) flatten;
+              inherit (lib)
+                concatStringsSep
+                flatten
+                optionalAttrs
+                ;
+
               inherit (import ../../lib.nix { inherit icedosLib; }) mouseSpeedToCosmicSpeed pow2;
 
               mouseSpeedValue = mouseSpeedToCosmicSpeed mouseSpeed;
@@ -244,11 +245,8 @@
                       };
 
                       xkb_config = {
-                        layout = keyboardLayouts;
-
                         model = "pc104";
                         rules = "";
-                        variant = ",";
 
                         options = mkRON "optional" "
                         terminate:ctrl_alt_bksp
@@ -262,6 +260,13 @@
 
                         repeat_delay = repeatDelay;
                         repeat_rate = repeatRate;
+                      }
+                      // optionalAttrs (keyboardLayouts != [ ]) {
+                        layout = concatStringsSep "," keyboardLayouts;
+
+                        # One empty variant slot per layout, comma-joined (xkb
+                        # expects variant entries to match the layout count).
+                        variant = concatStringsSep "," (map (_: "") keyboardLayouts);
                       };
                     };
 

@@ -22,16 +22,10 @@
 
       focus =
         let
-          inherit (focus)
-            cursorFollowsFocus
-            followsCursor
-            followsCursorDelay
-            ;
+          inherit (focus) cursorFollowsFocus;
         in
         {
           cursorFollowsFocus = mkBoolOption { default = cursorFollowsFocus; };
-          followsCursor = mkBoolOption { default = followsCursor; };
-          followsCursorDelay = mkNumberOption { default = followsCursorDelay; };
         };
 
       snapWindowsToEdges =
@@ -64,11 +58,7 @@
             snapWindowsToEdges
             ;
 
-          inherit (focus)
-            cursorFollowsFocus
-            followsCursor
-            followsCursorDelay
-            ;
+          inherit (focus) cursorFollowsFocus;
 
           inherit (lib) mkIf;
           inherit (pkgs) callPackage;
@@ -94,8 +84,8 @@
                     in
                     if enable then threshold else 0;
 
-                  focus_follows_cursor = followsCursor;
-                  focus_follows_cursor_delay = followsCursorDelay;
+                  focus_follows_cursor = windows.focus.followsMouse;
+                  focus_follows_cursor_delay = windows.focus.delay;
                 };
               };
             }

@@ -3,8 +3,6 @@ cli = false
 
 [icedos.desktop.cosmic.windowManagement.focus]
 cursorFollowsFocus = false
-followsCursor = false
-followsCursorDelay = 0 # ms
 
 [icedos.desktop.cosmic.windowManagement.snapWindowsToEdges]
 enable = true

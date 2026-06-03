@@ -21,6 +21,3 @@ alwaysHide = false
 
 [icedos.desktop.cosmic.patches.pop-gtk-theme]
 skipInkscape = true
-
-[icedos.desktop.cosmic.patches.xdg-desktop-portal-cosmic]
-useGtkFilePicker = false
