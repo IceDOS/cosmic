@@ -59,7 +59,6 @@
             ;
 
           inherit (focus) cursorFollowsFocus;
-
           inherit (lib) mkIf;
           inherit (pkgs) callPackage;
         in

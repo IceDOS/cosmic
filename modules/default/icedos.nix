@@ -124,7 +124,6 @@
         modules = [
           "appearance"
           "cosmic-files"
-          "cosmic-screenshot"
           "dock"
           "input"
           "magnifier"
@@ -133,7 +132,6 @@
           "patches"
           "power"
           "sound"
-          "startup"
           "time"
           "wallpaper"
           "window-management"
