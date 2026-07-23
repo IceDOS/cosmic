@@ -1,7 +1,7 @@
 { icedosLib, lib, ... }:
 
 {
-  options.icedos.desktop.cosmic.windowManagement =
+  options.icedos.desktop.cosmic.window-management =
     let
       inherit (icedosLib) mkBoolOption mkNumberOption;
 
@@ -10,11 +10,11 @@
           let
             inherit (lib) readFile;
           in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.windowManagement
+          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.window-management
         )
         cli
         focus
-        snapWindowsToEdges
+        snap-windows-to-edges
         ;
     in
     {
@@ -28,9 +28,9 @@
           cursorFollowsFocus = mkBoolOption { default = cursorFollowsFocus; };
         };
 
-      snapWindowsToEdges =
+      snap-windows-to-edges =
         let
-          inherit (snapWindowsToEdges) enable threshold;
+          inherit (snap-windows-to-edges) enable threshold;
         in
         {
           enable = mkBoolOption { default = enable; };
@@ -52,10 +52,10 @@
           inherit (config.icedos) desktop;
           inherit (desktop) windows;
 
-          inherit (desktop.cosmic.windowManagement)
+          inherit (desktop.cosmic.window-management)
             cli
             focus
-            snapWindowsToEdges
+            snap-windows-to-edges
             ;
 
           inherit (focus) cursorFollowsFocus;
@@ -79,7 +79,7 @@
 
                   edge_snap_threshold =
                     let
-                      inherit (snapWindowsToEdges) enable threshold;
+                      inherit (snap-windows-to-edges) enable threshold;
                     in
                     if enable then threshold else 0;
 

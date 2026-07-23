@@ -1,4 +1,4 @@
-[icedos.desktop.cosmic.brightnessControl.transition]
+[icedos.desktop.cosmic.brightness-control.transition]
 enable = true
 step = 5 # brightness % applied per tick
 interval = 0.05 # seconds between ticks

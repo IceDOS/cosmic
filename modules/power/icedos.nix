@@ -49,7 +49,9 @@
           mkIdleScript =
             user:
             let
-              inherit (users.${user}.idle) disableMonitors lock;
+              inherit (users.${user}.idle) lock;
+
+              disableMonitors = users.${user}.idle.disable-monitors;
 
               timeouts = concatStringsSep " " (
                 optional lock.enable "timeout ${toString lock.seconds} '${loginctl} lock-session'"
@@ -93,7 +95,9 @@
               let
                 user = config.home.username;
                 inherit (config.lib.cosmic) mkRON;
-                inherit (users.${user}.idle) disableMonitors suspend;
+                inherit (users.${user}.idle) suspend;
+
+                disableMonitors = users.${user}.idle.disable-monitors;
 
                 suspendSeconds = mkRON "raw" (
                   if (suspend.enable) then "Some(${toString (suspend.seconds * 1000)})" else "None"

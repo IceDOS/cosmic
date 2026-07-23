@@ -1,7 +1,7 @@
 { icedosLib, ... }:
 
 {
-  options.icedos.desktop.cosmic.brightnessControl =
+  options.icedos.desktop.cosmic.brightness-control =
     let
       inherit (icedosLib)
         mkBoolOption
@@ -14,7 +14,7 @@
 
       inherit (builtins) readFile;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.brightnessControl.transition)
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.brightness-control.transition)
         enable
         step
         interval
@@ -30,13 +30,13 @@
         enable = mkBoolOption { default = enable; };
 
         step = mkIntBetweenOption {
-          path = "icedos.desktop.cosmic.brightnessControl.transition.step";
+          path = "icedos.desktop.cosmic.brightness-control.transition.step";
           source = ./config.toml;
           default = step;
         } 1 100;
 
         interval = mkFloatBetweenOption {
-          path = "icedos.desktop.cosmic.brightnessControl.transition.interval";
+          path = "icedos.desktop.cosmic.brightness-control.transition.interval";
           source = ./config.toml;
           default = interval;
         } 0.05 10.0;
@@ -55,7 +55,7 @@
         }:
 
         let
-          inherit (config.icedos.desktop.cosmic.brightnessControl) schedules transition;
+          inherit (config.icedos.desktop.cosmic.brightness-control) schedules transition;
 
           inherit (lib)
             concatStringsSep

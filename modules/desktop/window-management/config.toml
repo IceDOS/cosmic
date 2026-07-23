@@ -1,9 +1,9 @@
-[icedos.desktop.cosmic.windowManagement]
+[icedos.desktop.cosmic.window-management]
 cli = false
 
-[icedos.desktop.cosmic.windowManagement.focus]
+[icedos.desktop.cosmic.window-management.focus]
 cursorFollowsFocus = false
 
-[icedos.desktop.cosmic.windowManagement.snapWindowsToEdges]
+[icedos.desktop.cosmic.window-management.snap-windows-to-edges]
 enable = true
 threshold = 25

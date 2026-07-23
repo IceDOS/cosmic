@@ -1,7 +1,7 @@
 { icedosLib, lib, ... }:
 
 {
-  options.icedos.desktop.cosmic.applications.cosmicFiles =
+  options.icedos.desktop.cosmic.applications.cosmic-files =
     let
       inherit (icedosLib)
         mkBoolOption
@@ -14,7 +14,7 @@
           let
             inherit (lib) readFile;
           in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.applications.cosmicFiles
+          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.applications.cosmic-files
         )
         details
         foldersFirst
@@ -40,7 +40,7 @@
           ...
         }:
         let
-          inherit (config.icedos.desktop.cosmic.applications.cosmicFiles)
+          inherit (config.icedos.desktop.cosmic.applications.cosmic-files)
             details
             hidden
             foldersFirst

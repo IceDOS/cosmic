@@ -1,6 +1,10 @@
 { icedosLib, lib, ... }:
 
 {
+  # cosmic panel options plus a nested `cosmic` contribution to the shared desktop
+  # per-user submodule (`icedos.desktop.users`). The `users` child declaration MUST
+  # omit `default` — only desktop/default sets `default = {}`; two defaulted
+  # `attrsOf submodule` decls of the same path fail to type-merge.
   options.icedos.desktop =
     let
       inherit (icedosLib)
@@ -48,10 +52,7 @@
         themeMode = mkStrOption { default = themeMode; };
       };
 
-      # Contributes `cosmic` to the desktop per-user submodule (declared in
-      # icedos/desktop). cosmic per-user config lives at
-      # icedos.desktop.users.<name>.cosmic and materialises via desktop's genDefaults.
-      users = mkSubmoduleAttrsOption { default = { }; } {
+      users = mkSubmoduleAttrsOption { } {
         cosmic.panelFavorites = mkStrListOption { default = users.username.cosmic.panelFavorites; };
       };
     };
