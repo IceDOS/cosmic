@@ -1,18 +1,18 @@
 { icedosLib, lib, ... }:
 
 {
-  options.icedos.desktop.cosmic =
+  options.icedos.desktop =
     let
       inherit (icedosLib)
         mkBoolOption
         mkNumberOption
         mkStrListOption
         mkStrOption
-        mkUsersOption
+        mkSubmoduleAttrsOption
         ;
 
       inherit (lib) readFile;
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop) cosmic;
+      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop) cosmic users;
       inherit (cosmic) panel;
 
       inherit (panel)
@@ -30,7 +30,7 @@
       inherit (plugins) center left right;
     in
     {
-      panel = {
+      cosmic.panel = {
         autohide = mkBoolOption { default = autohide; };
         expand = mkBoolOption { default = expand; };
         gaps = mkBoolOption { default = gaps; };
@@ -48,8 +48,11 @@
         themeMode = mkStrOption { default = themeMode; };
       };
 
-      users = mkUsersOption {
-        panelFavorites = mkStrListOption { default = cosmic.users.username.panelFavorites; };
+      # Contributes `cosmic` to the desktop per-user submodule (declared in
+      # icedos/desktop). cosmic per-user config lives at
+      # icedos.desktop.users.<name>.cosmic and materialises via desktop's genDefaults.
+      users = mkSubmoduleAttrsOption { default = { }; } {
+        cosmic.panelFavorites = mkStrListOption { default = users.username.cosmic.panelFavorites; };
       };
     };
 
@@ -63,7 +66,8 @@
           ...
         }:
         let
-          inherit (config.icedos.desktop) cosmic;
+          inherit (config.icedos) desktop;
+          inherit (desktop) cosmic;
           inherit (cosmic) panel;
           inherit (lib) mkIf length;
 
@@ -87,7 +91,7 @@
               { config, ... }:
 
               let
-                inherit (cosmic.users.${config.home.username}) panelFavorites;
+                inherit (desktop.users.${config.home.username}.cosmic) panelFavorites;
                 inherit (config.lib.cosmic) mkRON;
               in
               {

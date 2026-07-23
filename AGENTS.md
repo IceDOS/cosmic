@@ -33,6 +33,10 @@ In the config root's `config.toml`, point this repo's `overrideUrl` at your loca
 checkout (`path:/abs/path/to/cosmic`), then `icedos rebuild --build` (no activation).
 
 ## Notable modules / gotchas
+- **Per-user config nests under the shared desktop user submodule**, not a cosmic-owned
+  `.users` tree: `modules/desktop/panel` contributes `cosmic` to `desktop.users`, so panel
+  favorites live at `icedos.desktop.users.<name>.cosmic.panelFavorites` (materialised by
+  `desktop/default`'s `genDefaults`). See core's *Per-user (`users`) options*.
 - `patches/` carries local patches against upstream COSMIC (pop-os). On a COSMIC bump,
   check the upstream issue/PR trackers to see whether each local patch is still needed
   before keeping it (see core memory `reference_cosmic_patch_trackers`).

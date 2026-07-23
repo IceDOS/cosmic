@@ -23,5 +23,5 @@ right = [
   "com.system76.CosmicAppletPower",
 ]
 
-[icedos.desktop.cosmic.users.username]
+[icedos.desktop.users.username.cosmic]
 panelFavorites = []

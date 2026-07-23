@@ -36,7 +36,6 @@
 
         let
           inherit (config) icedos;
-          inherit (icedos) users;
 
           inherit (icedos.desktop.cosmic)
             disableExcludedPackagesWarning
@@ -56,14 +55,9 @@
           checkIfPluginsExists = plugin: elem plugin allPlugins;
 
           inherit (icedosLib.pkgs) mapper;
-          inherit (icedosLib.users) genDefaults;
           inherit (lib) elem optional;
         in
         {
-          icedos.desktop.cosmic.users = genDefaults {
-            inherit users;
-          };
-
           environment.systemPackages =
             with pkgs;
             [
