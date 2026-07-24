@@ -4,9 +4,9 @@
   options.icedos.desktop.cosmic.accessibility.magnifier =
     let
       inherit (icedosLib) mkBoolOption mkEnumOption mkNumberOption;
-      inherit (lib) readFile;
+      inherit (lib) importTOML;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.accessibility.magnifier)
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.accessibility.magnifier)
         mouseZoomShortcuts
         moveZoom
         overlay

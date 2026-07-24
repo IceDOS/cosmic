@@ -9,9 +9,9 @@
         mkStrOption
         ;
 
-      inherit (lib) readFile;
+      inherit (lib) importTOML;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance)
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.appearance)
         followStylix
         gaps
         gtkTheming
@@ -69,12 +69,12 @@
                   elemAt
                   genList
                   optionalAttrs
-                  readFile
+                  importTOML
                   ;
 
                 inherit (import ../../../lib.nix { inherit icedosLib; }) hexToRgb;
 
-                appearanceDefaults = (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.appearance;
+                appearanceDefaults = (importTOML ./config.toml).icedos.desktop.cosmic.appearance;
 
                 stylixEnabled = (osConfig.stylix.enable or false) && followStylix;
                 stylixColors = osConfig.lib.stylix.colors or { };

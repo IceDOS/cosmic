@@ -15,10 +15,10 @@
 
       inherit (lib)
         head
-        readFile
+        importTOML
         ;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.input) keyboard mouse;
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.input) keyboard mouse;
 
       inherit (keyboard)
         alternateCharactersKey
@@ -110,7 +110,7 @@
 
         shortcuts =
           let
-            inherit (head (fromTOML (readFile ./shortcuts.toml)).icedos.desktop.cosmic.input.keyboard.shortcuts)
+            inherit (head (importTOML ./shortcuts.toml).icedos.desktop.cosmic.input.keyboard.shortcuts)
               action
               command
               description

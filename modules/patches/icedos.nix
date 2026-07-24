@@ -4,9 +4,9 @@
   options.icedos.desktop.cosmic.patches =
     let
       inherit (icedosLib) mkBoolOption mkNumberOption;
-      inherit (lib) readFile;
+      inherit (lib) importTOML;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.patches)
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.patches)
         cosmic-applets
         cosmic-comp
         cosmic-notifications

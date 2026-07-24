@@ -4,8 +4,8 @@
   options.icedos.desktop.cosmic.accessibility =
     let
       inherit (icedosLib) mkBoolOption;
-      inherit (lib) readFile;
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.accessibility) monoSound;
+      inherit (lib) importTOML;
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.accessibility) monoSound;
     in
     {
       monoSound = mkBoolOption { default = monoSound; };

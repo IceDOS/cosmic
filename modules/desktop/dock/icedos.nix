@@ -13,9 +13,9 @@
       inherit
         (
           let
-            inherit (lib) readFile;
+            inherit (lib) importTOML;
           in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.dock
+          (importTOML ./config.toml).icedos.desktop.cosmic.dock
         )
         autohide
         enable

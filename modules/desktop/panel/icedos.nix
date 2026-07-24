@@ -15,8 +15,8 @@
         mkSubmoduleAttrsOption
         ;
 
-      inherit (lib) readFile;
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop) cosmic users;
+      inherit (lib) importTOML;
+      inherit ((importTOML ./config.toml).icedos.desktop) cosmic users;
       inherit (cosmic) panel;
 
       inherit (panel)

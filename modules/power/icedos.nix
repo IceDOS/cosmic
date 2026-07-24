@@ -4,9 +4,9 @@
   options.icedos.desktop.cosmic.power.lock.disableMonitorsOnLockKeybind =
     let
       inherit (icedosLib) mkBoolOption;
-      inherit (lib) readFile;
+      inherit (lib) importTOML;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.power.lock)
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.power.lock)
         disableMonitorsOnLockKeybind
         ;
     in

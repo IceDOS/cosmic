@@ -4,9 +4,9 @@
   options.icedos.desktop.cosmic.x11 =
     let
       inherit (icedosLib) mkBoolOption mkEitherOption mkStrOption;
-      inherit (lib) readFile types;
+      inherit (lib) importTOML types;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.x11)
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.x11)
         globalShortcuts
         mouseEvents
         scaling

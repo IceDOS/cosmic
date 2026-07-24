@@ -12,9 +12,9 @@
       inherit
         (
           let
-            inherit (lib) readFile;
+            inherit (lib) importTOML;
           in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.applications.cosmic-files
+          (importTOML ./config.toml).icedos.desktop.cosmic.applications.cosmic-files
         )
         details
         foldersFirst

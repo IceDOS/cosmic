@@ -8,9 +8,9 @@
       inherit
         (
           let
-            inherit (lib) readFile;
+            inherit (lib) importTOML;
           in
-          (fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.sound
+          (importTOML ./config.toml).icedos.desktop.cosmic.sound
         )
         outputAmplification
         inputAmplification

@@ -12,9 +12,9 @@
         mkSubmoduleListOption
         ;
 
-      inherit (builtins) readFile;
+      inherit (builtins) importTOML;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.brightness-control.transition)
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.brightness-control.transition)
         enable
         step
         interval

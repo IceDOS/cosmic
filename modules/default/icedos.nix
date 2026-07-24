@@ -10,9 +10,9 @@
   options.icedos.desktop.cosmic =
     let
       inherit (icedosLib) mkBoolOption mkStrListOption;
-      inherit (lib) readFile;
+      inherit (lib) importTOML;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic)
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic)
         disableExcludedPackagesWarning
         excludeDefaultPackages
         ;

@@ -10,9 +10,9 @@
         mkSubmoduleListOption
         ;
 
-      inherit (lib) head readFile;
+      inherit (lib) head importTOML;
 
-      inherit ((fromTOML (readFile ./config.toml)).icedos.desktop.cosmic.wallpaper)
+      inherit ((importTOML ./config.toml).icedos.desktop.cosmic.wallpaper)
         fit
         seconds
         ;
@@ -23,7 +23,7 @@
 
       monitors =
         let
-          m = head (fromTOML (readFile ./monitors.toml)).icedos.desktop.cosmic.wallpaper.monitors;
+          m = head (importTOML ./monitors.toml).icedos.desktop.cosmic.wallpaper.monitors;
         in
         mkSubmoduleListOption { default = [ ]; } {
           name = mkStrOption { default = m.name; };
