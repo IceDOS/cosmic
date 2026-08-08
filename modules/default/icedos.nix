@@ -1,6 +1,13 @@
 { icedosLib, lib, ... }:
 
 {
+  # icedosLib contribution: the repo-root `lib.nix` (hexToRgb/mouseSpeed
+  # helpers) also enters the merged `icedosLib` namespace via this always-on
+  # `default` module. The in-tree modules import the same file directly by
+  # path; this field is what makes its names visible (and duplicate-checked)
+  # in the merged lib.
+  lib = import ../../lib.nix { inherit icedosLib lib; };
+
   inputs.cosmic-manager = {
     url = "github:HeitorAugustoLN/cosmic-manager";
     inputs.nixpkgs.follows = "nixpkgs";
@@ -133,14 +140,14 @@
           "x11"
         ];
       }
-    ];
 
-    optionalDependencies = [
       {
         url = "github:icedos/desktop";
         modules = [ "cosmic-greeter" ];
       }
+    ];
 
+    optionalDependencies = [
       {
         url = "github:icedos/apps";
 

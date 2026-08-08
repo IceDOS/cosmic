@@ -1,4 +1,4 @@
-{ icedosLib }:
+{ icedosLib, ... }:
 
 let
   inherit (icedosLib.color) hexToRgbInts;

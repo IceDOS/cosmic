@@ -22,7 +22,16 @@ The COSMIC desktop environment for IceDOS, under the `icedos.desktop.cosmic` nam
   `desktop/{appearance,dock,panel,wallpaper,window-management,workspaces}`,
   `accessibility/{magnifier,mono-sound}`, `applications/{cosmic-files,x11}`,
   `brightness-control`, `input`, `sound`, `power`, `time`, `patches`.
-- `lib.nix` is a repo-local helper. **No root `icedos.nix`.**
+- `lib.nix` is a repo-root helper that also enters the merged **`icedosLib`**
+  namespace: the always-on `default` module imports it via its top-level `lib`
+  field (`modules/default/icedos.nix`: `lib = import ../../lib.nix { inherit
+  icedosLib lib; };`), and core merges that field into the module-facing
+  `icedosLib` over the full dependency closure, so its names enter the merged
+  namespace and the duplicate-name check. It must keep the `{ icedosLib, ... }`
+  signature (the trailing `...` tolerates the extra `lib`). The in-tree
+  modules' direct `import <depth>/lib.nix { inherit icedosLib; }`
+  calls (input, desktop/appearance, desktop/wallpaper) are unaffected.
+  **No root `icedos.nix`.**
 - `flake.nix` scans the whole repo: `icedosLib.scanModules { path = ./.; filename = "icedos.nix"; }`.
 
 ## Module shape here
