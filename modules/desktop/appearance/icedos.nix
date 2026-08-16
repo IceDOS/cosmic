@@ -76,10 +76,9 @@
 
                 appearanceDefaults = (importTOML ./config.toml).icedos.desktop.cosmic.appearance;
 
-                stylixEnabled = (osConfig.stylix.enable or false) && followStylix;
-                stylixColors = osConfig.lib.stylix.colors or { };
+                stylixColors = osConfig.lib.stylix.colors;
 
-                pickColor = slot: fallback: if stylixEnabled then stylixColors.${slot} else fallback;
+                pickColor = slot: fallback: if followStylix then stylixColors.${slot} else fallback;
 
                 generateRgbRon =
                   {
@@ -155,12 +154,12 @@
 
                 stylixPolarityMapped =
                   let
-                    polarity = osConfig.stylix.polarity or "dark";
+                    polarity = osConfig.stylix.polarity;
                   in
                   if polarity == "either" then "auto" else polarity;
 
                 effectiveMode =
-                  if stylixEnabled && appearance.mode == appearanceDefaults.mode then
+                  if followStylix && appearance.mode == appearanceDefaults.mode then
                     stylixPolarityMapped
                   else
                     appearance.mode;
@@ -187,10 +186,8 @@
 
                 text_hint = generateRgbRon { color = pickColor "base04" "c0c0c1"; };
 
-                # text_tint shifts accent-on / on-foreground colors so labels on
-                # accent backgrounds (Authenticate / Save buttons, app-list
-                # selected pill, etc.) keep contrast. White on dark, black on
-                # light — same rule libadwaita uses for `accent_fg_color`.
+                # text_tint shifts on-accent foregrounds (buttons, selected pill)
+                # for contrast: white on dark, black on light (accent_fg rule).
                 textTintWhite = generateRgbRon { color = "ffffff"; };
                 textTintBlack = generateRgbRon { color = "000000"; };
 
@@ -227,7 +224,7 @@
 
                   toolkit =
                     let
-                      stylixIconThemeEnabled = stylixEnabled && (osConfig.stylix.icons.enable or false);
+                      stylixIconThemeEnabled = followStylix && osConfig.stylix.icons.enable;
 
                       iconTheme =
                         if stylixIconThemeEnabled then
@@ -260,20 +257,13 @@
                       text = if isModeAuto then "true" else "false";
                     };
                   }
-                  // optionalAttrs stylixEnabled {
+                  // optionalAttrs followStylix {
                     "cosmic/com.system76.CosmicTk/v1/interface_font" = mkFontFile osConfig.stylix.fonts.sansSerif.name;
                     "cosmic/com.system76.CosmicTk/v1/monospace_font" = mkFontFile osConfig.stylix.fonts.monospace.name;
                   };
 
-                # libcosmic's theme builder auto-derives `accent_button.on`
-                # from accent luminance with a fixed threshold; for dark
-                # accents like base0E (#9141ac, luminance ~0.14) it picks
-                # black, leaving black labels on a dark-purple button — bad
-                # contrast. text_tint is the documented knob but does not
-                # override on-accent fg in this libcosmic version. Patch the
-                # generated theme files post-build to force white-on-dark /
-                # black-on-light. Runs after `buildCosmicTheme` so it lands
-                # last in HM activation.
+                # libcosmic derives accent_button.on from luminance (black on dark
+                # accents, e.g. base0E); patch built theme files to force contrast.
                 home.activation.icedos-cosmic-accent-on-fix =
                   lib.hm.dag.entryAfter
                     [
